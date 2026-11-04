@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>BudScout</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#0b1710;color:#eef7ee;font-family:Arial,sans-serif}
+
+main{max-width:750px;margin:auto;padding:24px 18px}
+
+h1{color:#a6ed75;margin:15px 0}
+
+h2{font-size:26px;margin:22px 0 10px}
+
+p{color:#a9b9aa;line-height:1.5}
+
+.panel,.item{background:#1b2d21;border:1px solid #39513e;border-radius:15px;padding:16px;margin:12px 0}
+
+input,select{width:100%;padding:14px;margin:8px 0;background:#102017;color:white;border:1px solid #537159;border-radius:10px;font-size:16px}
+
+button{padding:12px 18px;border:0;border-radius:10px;background:#a6ed75;color:#102017;font-size:16px;font-weight:bold;margin:5px 5px 5px 0;cursor:pointer}
+
+button.off{background:#304c37;color:white}
+
+.price{color:#a6ed75;font-size:23px;font-weight:bold}
+
+.small{font-size:13px;color:#a9b9aa}
+
+#map{height:370px;background:linear-gradient(35deg,#263c2d 25%,#39533e 25%,#39533e 30%,#263c2d 30%,#263c2d 65%,#39533e 65%);border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159}
+
+.pin{position:absolute;transform:translate(-50%,-50%);font-size:13px;padding:10px;background:#a6ed75;white-space:nowrap}
+
+.hidden{display:none}
+
+</style>
+
+</head>
+
+<body>
+
+<main>
+
+<h1>🌿 BudScout</h1>
+
+<h2>Find the product.<br>Compare the price.</h2>
+
+<p>Search by strain, brand, or dispensary. Demo listings only.</p>
+
+<div class="panel">
+
+<label>Search products</label>
+
+<input id="search" placeholder="Try Blue Dream or North Coast">
+
+<label>Sort results</label>
+
+<select id="sort">
+
+<option value="low">Lowest price per gram</option>
+
+<option value="high">Highest price per gram</option>
+
+<option value="total">Lowest total price</option>
+
+</select>
+
+</div>
+
+<button id="listBtn">☷ List</button>
+
+<button id="mapBtn" class="off">⌖ Map</button>
+
+<p id="count"></p>
+
+<div id="list"></div>
+
+<div id="map" class="hidden"></div>
+
+<p class="small">Fictional stores and prices. No live GPS or ordering.</p>
+
+</main>
+
+<script>
+
+const products=[
+
+{strain:"Blue Dream",brand:"North Coast",store:"Green Valley",grams:3.5,price:28,x:20,y:25},
+
+{strain:"Blue Dream",brand:"North Coast",store:"Harvest House",grams:7,price:49,x:65,y:20},
+
+{strain:"Blue Dream",brand:"North Coast",store:"Evergreen",grams:3.5,price:35,x:75,y:65},
+
+{strain:"Blue Dream",brand:"North Coast",store:"Cedar Grove",grams:14,price:84,x:30,y:75},
+
+{strain:"Citrus Haze",brand:"Summit",store:"Green Valley",grams:3.5,price:31.5,x:20,y:25},
+
+{strain:"Wedding Cake",brand:"Summit",store:"Evergreen",grams:7,price:56,x:75,y:65},
+
+{strain:"Gelato",brand:"River",store:"Harvest House",grams:3.5,price:30,x:65,y:20},
+
+{strain:"Pineapple Express",brand:"River",store:"Cedar Grove",grams:7,price:45,x:30,y:75}
+
+];
+
+const search=document.getElementById("search");
+
+const sort=document.getElementById("sort");
+
+const list=document.getElementById("list");
+
+const map=document.getElementById("map");
+
+let view="list";
+
+function render(){
+
+let q=search.value.toLowerCase().trim();
+
+let items=products.filter(p=>(p.strain+" "+p.brand+" "+p.store).toLowerCase().includes(q));
+
+items.sort((a,b)=>sort.value==="high"?b.price/b.grams-a.price/a.grams:sort.value==="total"?a.price-b.price:a.price/a.grams-b.price/b.grams);
+
+document.getElementById("count").textContent=items.length+" sample listings";
+
+list.innerHTML=items.map(p=>'<div class="item"><strong>'+p.strain+'</strong><p>'+p.brand+' · '+p.store+' · '+p.grams+'g</p><div class="price">$'+(p.price/p.grams).toFixed(2)+'/g</div><span class="small">$'+p.price.toFixed(2)+' total</span></div>').join("")||"<p>No matching products.</p>";
+
+map.innerHTML="";
+
+items.forEach(p=>{
+
+let b=document.createElement("button");
+
+b.className="pin";
+
+b.style.left=p.x+"%";
+
+b.style.top=p.y+"%";
+
+b.textContent="$"+(p.price/p.grams).toFixed(2)+"/g";
+
+b.onclick=()=>alert(p.store+"\n"+p.strain+"\n$"+p.price.toFixed(2));
+
+map.appendChild(b);
+
+});
+
+list.classList.toggle("hidden",view!=="list");
+
+map.classList.toggle("hidden",view!=="map");
+
+document.getElementById("listBtn").className=view==="list"?"":"off";
+
+document.getElementById("mapBtn").className=view==="map"?"":"off";
+
+}
+
+search.addEventListener("input",render);
+
+sort.addEventListener("change",render);
+
+document.getElementById("listBtn").onclick=()=>{view="list";render()};
+
+document.getElementById("mapBtn").onclick=()=>{view="map";render()};
+
+render();
+
+</script>
+
+</body>
+
+</html>
