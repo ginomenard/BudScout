@@ -142,22 +142,23 @@ list.innerHTML=items.map(p=>'<div class="item"><strong>'+p.strain+'</strong><p>'
 
 map.innerHTML="";
 
+// One pin per store prevents overlapping buttons when multiple products share a location.
+const stores=new Map();
 items.forEach(p=>{
+if(!stores.has(p.store))stores.set(p.store,[]);
+stores.get(p.store).push(p);
+});
 
-let b=document.createElement("button");
-
+stores.forEach((listings,store)=>{
+const cheapest=listings.reduce((best,p)=>p.price/p.grams<best.price/best.grams?p:best);
+const b=document.createElement("button");
 b.className="pin";
-
-b.style.left=p.x+"%";
-
-b.style.top=p.y+"%";
-
-b.textContent="$"+(p.price/p.grams).toFixed(2)+"/g";
-
-b.onclick=()=>alert(p.store+"\n"+p.strain+"\n$"+p.price.toFixed(2));
-
+b.style.left=cheapest.x+"%";
+b.style.top=cheapest.y+"%";
+b.textContent="$"+(cheapest.price/cheapest.grams).toFixed(2)+"/g · "+listings.length;
+b.setAttribute("aria-label",store+": "+listings.length+" matching listings, lowest price $"+(cheapest.price/cheapest.grams).toFixed(2)+" per gram");
+b.onclick=()=>alert(store+"\n"+listings.length+" matching listings\nLowest price: $"+(cheapest.price/cheapest.grams).toFixed(2)+"/g");
 map.appendChild(b);
-
 });
 
 list.classList.toggle("hidden",view!=="list");
