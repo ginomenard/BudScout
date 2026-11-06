@@ -33,6 +33,21 @@ input,select{width:100%;padding:14px;margin:8px 0;background:#102017;color:white
 button{padding:12px 18px;border:0;border-radius:10px;background:#a6ed75;color:#102017;font-size:16px;font-weight:bold;margin:5px 5px 5px 0;cursor:pointer}
 
 button.off{background:#304c37;color:white}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #a6ed75;outline-offset:2px}
+button[hidden]{display:none}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.controls label{display:block}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chips button{font-size:14px;padding:9px 12px}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.compare{display:flex;align-items:center;gap:8px;font-size:14px;color:#eef7ee}
+.compare input{width:auto;margin:0;accent-color:#a6ed75}
+#comparePanel{position:sticky;bottom:8px;z-index:5;box-shadow:0 5px 30px #0009}
+#compareResults{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #39513e}th{color:#a6ed75}
+#map{isolation:isolate}
+.map-note{padding:10px;font-size:13px;color:#a9b9aa}
+@media(max-width:480px){.controls{grid-template-columns:1fr}main{padding:18px 14px}.pin{padding:7px;font-size:11px}}
 
 .price{color:#a6ed75;font-size:23px;font-weight:bold}
 
@@ -64,7 +79,7 @@ button.off{background:#304c37;color:white}
 
 <input id="search" placeholder="Try Blue Dream or North Coast">
 
-<label for="sort">Sort results</label>
+<div class="controls"><div><label for="sort">Sort results</label>
 
 <select id="sort">
 
@@ -74,7 +89,9 @@ button.off{background:#304c37;color:white}
 
 <option value="total">Lowest total price</option>
 
-</select>
+</select></div><div><label for="size">Package size</label><select id="size"><option value="all">All sizes</option><option value="3.5">3.5 g</option><option value="7">7 g</option><option value="14">14 g</option></select></div></div>
+
+<div class="chips" aria-label="Quick searches"><button type="button" class="off" data-query="Blue Dream">Blue Dream</button><button type="button" class="off" data-query="Gelato">Gelato</button><button type="button" class="off" data-query="Summit">Summit</button></div>
 
 <button type="button" id="clearBtn" class="off" hidden>Clear search</button>
 
@@ -88,9 +105,10 @@ button.off{background:#304c37;color:white}
 
 <div id="list"></div>
 
-<div id="map" class="hidden"></div>
+<div id="map" class="hidden" aria-label="Illustrative map of fictional stores"></div>
+<div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
 
-<p class="small">Fictional stores and prices. No live GPS or ordering.</p>
+<p class="small">All listings, prices and map positions are fictional examples—not real dispensary inventory or locations. No live GPS or ordering.</p>
 
 </main>
 
@@ -125,6 +143,17 @@ const list=document.getElementById("list");
 const map=document.getElementById("map");
 
 let view="list";
+const selected=new Set();
+const size=document.getElementById("size");
+const money=n=>"$"+n.toFixed(2);
+function toggleCompare(index){selected.has(index)?selected.delete(index):selected.add(index);render()}
+function renderCompare(){
+const panel=document.getElementById("comparePanel");
+const chosen=[...selected].map(i=>products[i]);
+panel.classList.toggle("hidden",!chosen.length);
+document.getElementById("compareCount").textContent="("+chosen.length+"/3)";
+document.getElementById("compareResults").innerHTML="<table><thead><tr><th>Product</th><th>Store</th><th>Size</th><th>Total</th><th>Price/g</th></tr></thead><tbody>"+chosen.map(p=>"<tr><td>"+p.strain+"</td><td>"+p.store+"</td><td>"+p.grams+"g</td><td>"+money(p.price)+"</td><td>"+money(p.price/p.grams)+"</td></tr>").join("")+"</tbody></table>";
+}
 
 function render(){
 
@@ -132,13 +161,15 @@ let q=search.value.toLowerCase().trim();
 
 document.getElementById("clearBtn").hidden=q.length===0;
 
-let items=products.filter(p=>(p.strain+" "+p.brand+" "+p.store).toLowerCase().includes(q));
+let items=products.map((p,index)=>({...p,index})).filter(p=>(p.strain+" "+p.brand+" "+p.store).toLowerCase().includes(q)&&(size.value==="all"||String(p.grams)===size.value));
 
 items.sort((a,b)=>sort.value==="high"?b.price/b.grams-a.price/a.grams:sort.value==="total"?a.price-b.price:a.price/a.grams-b.price/b.grams);
 
-document.getElementById("count").textContent=items.length+" sample listings";
+document.getElementById("count").textContent=items.length+" of "+products.length+" sample listings";
 
-list.innerHTML=items.map(p=>'<div class="item"><strong>'+p.strain+'</strong><p>'+p.brand+' · '+p.store+' · '+p.grams+'g</p><div class="price">$'+(p.price/p.grams).toFixed(2)+'/g</div><span class="small">$'+p.price.toFixed(2)+' total</span></div>').join("")||"<p>No matching products.</p>";
+list.innerHTML=items.map(p=>'<article class="item"><div class="meta"><strong>'+p.strain+'</strong><label class="compare"><input type="checkbox" data-compare="'+p.index+'" '+(selected.has(p.index)?'checked':'')+' '+(!selected.has(p.index)&&selected.size>=3?'disabled':'')+'> Compare</label></div><p>'+p.brand+' · '+p.store+' · '+p.grams+'g</p><div class="price">'+money(p.price/p.grams)+'/g</div><span class="small">'+money(p.price)+' total</span></article>').join("")||"<p>No matching products. Try clearing filters.</p>";
+list.querySelectorAll("[data-compare]").forEach(el=>el.addEventListener("change",()=>toggleCompare(Number(el.dataset.compare))));
+renderCompare();
 
 map.innerHTML="";
 
@@ -172,9 +203,12 @@ document.getElementById("mapBtn").className=view==="map"?"":"off";
 
 search.addEventListener("input",render);
 
-document.getElementById("clearBtn").onclick=()=>{search.value="";render();search.focus()};
+document.getElementById("clearBtn").onclick=()=>{search.value="";size.value="all";render();search.focus()};
 
 sort.addEventListener("change",render);
+size.addEventListener("change",render);
+document.querySelectorAll("[data-query]").forEach(b=>b.addEventListener("click",()=>{search.value=b.dataset.query;render();search.focus()}));
+document.getElementById("resetCompare").onclick=()=>{selected.clear();render()};
 
 document.getElementById("listBtn").onclick=()=>{view="list";render()};
 
