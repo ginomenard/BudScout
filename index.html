@@ -60,11 +60,11 @@ button.off{background:#304c37;color:white}
 
 <div class="panel">
 
-<label>Search products</label>
+<label for="search">Search products</label>
 
 <input id="search" placeholder="Try Blue Dream or North Coast">
 
-<label>Sort results</label>
+<label for="sort">Sort results</label>
 
 <select id="sort">
 
@@ -76,13 +76,15 @@ button.off{background:#304c37;color:white}
 
 </select>
 
+<button type="button" id="clearBtn" class="off" hidden>Clear search</button>
+
 </div>
 
 <button id="listBtn">☷ List</button>
 
 <button id="mapBtn" class="off">⌖ Map</button>
 
-<p id="count"></p>
+<p id="count" role="status" aria-live="polite"></p>
 
 <div id="list"></div>
 
@@ -128,6 +130,8 @@ function render(){
 
 let q=search.value.toLowerCase().trim();
 
+document.getElementById("clearBtn").hidden=q.length===0;
+
 let items=products.filter(p=>(p.strain+" "+p.brand+" "+p.store).toLowerCase().includes(q));
 
 items.sort((a,b)=>sort.value==="high"?b.price/b.grams-a.price/a.grams:sort.value==="total"?a.price-b.price:a.price/a.grams-b.price/b.grams);
@@ -167,6 +171,8 @@ document.getElementById("mapBtn").className=view==="map"?"":"off";
 }
 
 search.addEventListener("input",render);
+
+document.getElementById("clearBtn").onclick=()=>{search.value="";render();search.focus()};
 
 sort.addEventListener("change",render);
 
