@@ -11,6 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>BudScout</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoT4B8W2B1mF9g=" crossorigin="">
 
 <style>
 
@@ -53,7 +54,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 .small{font-size:13px;color:#a9b9aa}
 
-#map{height:370px;background:linear-gradient(35deg,#263c2d 25%,#39533e 25%,#39533e 30%,#263c2d 30%,#263c2d 65%,#39533e 65%);border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159}
+#map{height:440px;background:#263c2d;border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159;z-index:0}
 
 .pin{position:absolute;transform:translate(-50%,-50%);font-size:13px;padding:10px;background:#a6ed75;white-space:nowrap}
 
@@ -105,14 +106,35 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 <div id="list"></div>
 
-<div id="map" class="hidden" aria-label="Illustrative map of fictional stores"></div>
+<div id="map" class="hidden" aria-label="Interactive Ohio street map; dispensary locations are not yet verified"></div>
+<p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
 <div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
 
-<p class="small">All listings, prices and map positions are fictional examples—not real dispensary inventory or locations. No live GPS or ordering.</p>
+<p class="small">Product listings and prices are fictional examples. Map streets are real, but no dispensary locations or inventory are verified yet. Map tiles © OpenStreetMap contributors. No ordering.</p>
 
 </main>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
+
+// Future verified store records: {id,name,address,latitude,longitude,licenseId,source,verifiedAt}.
+// Keep product listings separate; demo inventory must never be associated with real stores.
+const verifiedDispensaries=[];
+const ohioCenter=[40.4173,-82.9071];
+let ohioMap=null;
+function initOhioMap(){
+ if(ohioMap)return;
+ if(typeof L==="undefined"){document.getElementById("mapStatus").textContent="Map unavailable: check your connection and reload.";return;}
+ ohioMap=L.map("map",{scrollWheelZoom:false}).setView(ohioCenter,7);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"}).addTo(ohioMap);
+ verifiedDispensaries.forEach(store=>{
+  if(Number.isFinite(store.latitude)&&Number.isFinite(store.longitude)){
+   const popup=document.createElement("div");const title=document.createElement("strong");title.textContent=store.name;
+   const address=document.createElement("p");address.textContent=store.address;popup.append(title,address);
+   L.marker([store.latitude,store.longitude]).addTo(ohioMap).bindPopup(popup);
+  }
+ });
+}
 
 const products=[
 
@@ -171,30 +193,13 @@ list.innerHTML=items.map(p=>'<article class="item"><div class="meta"><strong>'+p
 list.querySelectorAll("[data-compare]").forEach(el=>el.addEventListener("change",()=>toggleCompare(Number(el.dataset.compare))));
 renderCompare();
 
-map.innerHTML="";
-
-// One pin per store prevents overlapping buttons when multiple products share a location.
-const stores=new Map();
-items.forEach(p=>{
-if(!stores.has(p.store))stores.set(p.store,[]);
-stores.get(p.store).push(p);
-});
-
-stores.forEach((listings,store)=>{
-const cheapest=listings.reduce((best,p)=>p.price/p.grams<best.price/best.grams?p:best);
-const b=document.createElement("button");
-b.className="pin";
-b.style.left=cheapest.x+"%";
-b.style.top=cheapest.y+"%";
-b.textContent="$"+(cheapest.price/cheapest.grams).toFixed(2)+"/g · "+listings.length;
-b.setAttribute("aria-label",store+": "+listings.length+" matching listings, lowest price $"+(cheapest.price/cheapest.grams).toFixed(2)+" per gram");
-b.onclick=()=>alert(store+"\n"+listings.length+" matching listings\nLowest price: $"+(cheapest.price/cheapest.grams).toFixed(2)+"/g");
-map.appendChild(b);
-});
+// The map uses only verified store records, never fictional product coordinates.
 
 list.classList.toggle("hidden",view!=="list");
 
 map.classList.toggle("hidden",view!=="map");
+document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
+if(view==="map"){initOhioMap();if(ohioMap)requestAnimationFrame(()=>ohioMap.invalidateSize());}
 
 document.getElementById("listBtn").className=view==="list"?"":"off";
 document.getElementById("listBtn").setAttribute("aria-pressed",String(view==="list"));
