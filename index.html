@@ -54,9 +54,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 .small{font-size:13px;color:#a9b9aa}
 
-#map{display:block;width:100%;height:440px;min-height:440px;background:#263c2d;border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159;z-index:0;touch-action:pan-x pan-y}
+#map{display:block;width:100%;height:440px;min-height:440px;background:#263c2d;border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159;z-index:0}
 #map.hidden{display:none}
-#map .leaflet-container{width:100%;height:100%}
+#map.leaflet-container{width:100%;height:100%;touch-action:none}
 #map .leaflet-tile-pane img{max-width:none!important;max-height:none!important}
 @media(max-width:480px){#map{height:55vh;min-height:380px;max-height:580px}}
 
@@ -141,6 +141,14 @@ function showMapPoint(lat,lon,label,zoom=12){
 function locationFeedback(message){document.getElementById("locationFeedback").textContent=message;}
 function initOhioMap(){
  if(ohioMap)return;
+ // Leaflet JavaScript can load even when its required CSS is blocked.
+ // Detect missing positioning rules instead of displaying a broken draggable map.
+ const probe=document.createElement("div");probe.className="leaflet-pane";probe.style.visibility="hidden";document.body.appendChild(probe);
+ const leafletCssReady=getComputedStyle(probe).position==="absolute";probe.remove();
+ if(!leafletCssReady){
+  document.getElementById("mapStatus").textContent="Map styles did not load. Please reload the page or check your connection.";
+  return;
+ }
  if(typeof L==="undefined"){document.getElementById("mapStatus").textContent="Map unavailable: check your connection and reload.";return;}
  ohioMap=L.map("map",{scrollWheelZoom:false,tap:false}).setView(ohioCenter,7);
  // Watch for layout changes after the List/Map tab becomes visible.
