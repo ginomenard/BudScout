@@ -54,7 +54,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 .small{font-size:13px;color:#a9b9aa}
 
-#map{height:440px;background:#263c2d;border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159;z-index:0}
+#map{display:block;width:100%;height:440px;min-height:440px;background:#263c2d;border-radius:15px;position:relative;overflow:hidden;border:1px solid #537159;z-index:0;touch-action:pan-x pan-y}
+#map.hidden{display:none}
+#map .leaflet-container{width:100%;height:100%}
+#map .leaflet-tile-pane img{max-width:none!important;max-height:none!important}
+@media(max-width:480px){#map{height:55vh;min-height:380px;max-height:580px}}
 
 .pin{position:absolute;transform:translate(-50%,-50%);font-size:13px;padding:10px;background:#a6ed75;white-space:nowrap}
 
@@ -124,8 +128,11 @@ const verifiedDispensaries=[];
 const ohioCenter=[40.4173,-82.9071];
 let ohioMap=null;
 let locationMarker=null;
+let mapResizeObserver=null;
+function refreshMapSize(){if(!ohioMap)return;requestAnimationFrame(()=>{if(!map.classList.contains("hidden"))ohioMap.invalidateSize({pan:false,animate:false});});}
 function showMapPoint(lat,lon,label,zoom=12){
  initOhioMap();if(!ohioMap)return;
+ refreshMapSize();
  ohioMap.setView([lat,lon],zoom);
  if(locationMarker)ohioMap.removeLayer(locationMarker);
  locationMarker=L.circleMarker([lat,lon],{radius:9,color:"#102017",fillColor:"#a6ed75",fillOpacity:1,weight:2}).addTo(ohioMap);
@@ -135,7 +142,12 @@ function locationFeedback(message){document.getElementById("locationFeedback").t
 function initOhioMap(){
  if(ohioMap)return;
  if(typeof L==="undefined"){document.getElementById("mapStatus").textContent="Map unavailable: check your connection and reload.";return;}
- ohioMap=L.map("map",{scrollWheelZoom:false}).setView(ohioCenter,7);
+ ohioMap=L.map("map",{scrollWheelZoom:false,tap:false}).setView(ohioCenter,7);
+ // Watch for layout changes after the List/Map tab becomes visible.
+ if(typeof ResizeObserver!=="undefined"){
+  mapResizeObserver=new ResizeObserver(()=>refreshMapSize());
+  mapResizeObserver.observe(document.getElementById("map"));
+ }
  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"}).addTo(ohioMap);
  verifiedDispensaries.forEach(store=>{
   if(Number.isFinite(store.latitude)&&Number.isFinite(store.longitude)){
@@ -210,7 +222,7 @@ list.classList.toggle("hidden",view!=="list");
 map.classList.toggle("hidden",view!=="map");
 document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
 document.getElementById("locationTools").classList.toggle("hidden",view!=="map");
-if(view==="map"){initOhioMap();if(ohioMap)requestAnimationFrame(()=>ohioMap.invalidateSize());}
+if(view==="map"){initOhioMap();refreshMapSize();setTimeout(refreshMapSize,150);}
 
 document.getElementById("listBtn").className=view==="list"?"":"off";
 document.getElementById("listBtn").setAttribute("aria-pressed",String(view==="list"));
@@ -265,6 +277,8 @@ document.getElementById("resetOhio").addEventListener("click",()=>{
  if(locationMarker){ohioMap.removeLayer(locationMarker);locationMarker=null;}
  locationFeedback("Map reset to Ohio.");
 });
+window.addEventListener("resize",refreshMapSize);
+window.addEventListener("orientationchange",()=>setTimeout(refreshMapSize,200));
 render();
 
 </script>
