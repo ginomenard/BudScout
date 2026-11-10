@@ -40,3 +40,37 @@ test('demo product comparison still works', async ({ page }) => {
   await expect(page.locator('#comparePanel')).toBeVisible();
   await expect(page.locator('#compareCount')).toHaveText('(1/3)');
 });
+
+
+test('Ohio location search centers map without relying on live geocoding', async ({ page }) => {
+  await page.route('https://nominatim.openstreetmap.org/search**', async route => {
+    const url = new URL(route.request().url());
+    expect(url.searchParams.get('countrycodes')).toBe('us');
+    expect(url.searchParams.get('bounded')).toBe('1');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ lat: '41.3898', lon: '-82.0190', display_name: 'Avon, Ohio, USA' }])
+    });
+  });
+  await page.goto('/');
+  await page.locator('#mapBtn').click();
+  await page.locator('#locationQuery').fill('Avon');
+  await page.getByRole('button', { name: 'Search location' }).click();
+  await expect(page.locator('#locationFeedback')).toContainText('Map centered on Avon, Ohio, USA');
+  await expect(page.locator('#map .leaflet-interactive')).toHaveCount(1);
+  await page.locator('#resetOhio').click();
+  await expect(page.locator('#locationFeedback')).toHaveText('Map reset to Ohio.');
+  await expect(page.locator('#map .leaflet-interactive')).toHaveCount(0);
+});
+
+test('location search handles no Ohio matches without moving the map', async ({ page }) => {
+  await page.route('https://nominatim.openstreetmap.org/search**', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await page.goto('/');
+  await page.locator('#mapBtn').click();
+  await page.locator('#locationQuery').fill('Not a real Ohio city');
+  await page.getByRole('button', { name: 'Search location' }).click();
+  await expect(page.locator('#locationFeedback')).toContainText('No matching Ohio location found');
+  await expect(page.getByRole('button', { name: 'Search location' })).toBeEnabled();
+});
