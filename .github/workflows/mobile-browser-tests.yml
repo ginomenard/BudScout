@@ -6,7 +6,8 @@ permissions:
   contents: read
 jobs:
   mobile-e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 cannot install browsers on the current ubuntu-latest (26.04) runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

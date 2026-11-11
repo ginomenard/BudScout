@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>BudScout | Partner Preview</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1710;color:#eef7ee;font:16px/1.5 Arial,sans-serif}main{max-width:860px;margin:auto;padding:24px 18px}h1,h2{color:#a6ed75}h1{font-size:2rem;margin:8px 0}h2{font-size:1.2rem}p{color:#bdcbbf}.card{background:#1b2d21;border:1px solid #39513e;border-radius:16px;padding:20px;margin:16px 0}.eyebrow{color:#a6ed75;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.metric{font-size:1.8rem;font-weight:bold;color:#eef7ee}.muted{font-size:.85rem;color:#bdcbbf}.pill{display:inline-block;background:#304c37;color:#eef7ee;padding:5px 10px;border-radius:99px;font-size:.8rem}a{color:#a6ed75}button{background:#a6ed75;border:0;border-radius:10px;padding:12px 18px;font-size:1rem;font-weight:bold;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}.bar{display:flex;align-items:center;gap:12px;margin:10px 0}.bar span{width:92px}.track{height:16px;background:#304c37;flex:1;border-radius:8px;overflow:hidden}.fill{height:100%;background:#a6ed75}.notice{border-left:4px solid #a6ed75;padding:12px;background:#17291d}@media(max-width:550px){.grid{grid-template-columns:1fr}h1{font-size:1.6rem}}
+</style>
+</head>
+<body><main>
+<a href="./index.html">← Explore BudScout</a>
+<p class="eyebrow">BudScout for Business · Concept preview</p>
+<h1 id="welcome">Your dispensary on BudScout</h1>
+<p>Explore how a verified store profile and optional market insights could work for your business.</p>
+<div class="notice"><strong>Demonstration only.</strong> All metrics, product interest, and recommendations below are fictional examples. This is not a live business account, verified store listing, or real market research. No account, purchase, or personal information is required.</div>
+<section class="card" aria-labelledby="profile-title">
+<span class="pill">Example business profile</span><h2 id="profile-title">Your storefront preview</h2>
+<p id="store-name">Your Dispensary</p>
+<p>Future verified profiles could display approved store details, hours, menu links, and customer reviews. Details would require business verification before publication.</p>
+</section>
+<section class="card" aria-labelledby="dashboard-title">
+<span class="pill">Paid analytics concept</span><h2 id="dashboard-title">Sample market intelligence dashboard</h2>
+<div class="grid">
+<div><div class="metric">1,240</div><div class="muted">Illustrative profile views</div></div>
+<div><div class="metric">320</div><div class="muted">Illustrative product searches</div></div>
+</div>
+<h2>Illustrative category interest</h2>
+<div class="bar"><span>Flower</span><div class="track"><div class="fill" style="width:75%"></div></div></div>
+<div class="bar"><span>Edibles</span><div class="track"><div class="fill" style="width:55%"></div></div></div>
+<div class="bar"><span>Vapes</span><div class="track"><div class="fill" style="width:40%"></div></div></div>
+<p class="muted">Bars are fictional and not sourced from Ohio shoppers or sales.</p>
+</section>
+<section class="card" aria-labelledby="report-title">
+<span class="pill">Monthly report concept</span><h2 id="report-title">AI-assisted monthly insights</h2>
+<p><strong>Illustrative recommendation:</strong> If verified local searches for edibles rose while nearby availability remained low, consider reviewing assortment opportunities. This is an example of future report wording, not a claim about current demand.</p>
+<p>Future reports would use validated, aggregated information and clearly distinguish consumer interest from confirmed sales. No AI report is generated on this demo page.</p>
+</section>
+<section class="card">
+<h2>Explore a potential partnership</h2>
+<p>Basic listings are envisioned to be free. Optional business tools and intelligence subscriptions are under development; pricing and availability are not finalized.</p>
+<button id="copy" type="button">Copy this preview link</button>
+<p id="copy-status" class="muted" role="status" aria-live="polite"></p>
+</section>
+</main>
+<script>
+(function(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=(params.get('store')||'').trim().replace(/\s+/g,' ').slice(0,80);
+  const name=raw||'Your Dispensary';
+  document.getElementById('welcome').textContent=name+' on BudScout';
+  document.getElementById('store-name').textContent=name;
+  document.getElementById('copy').addEventListener('click',async function(){
+    const status=document.getElementById('copy-status');
+    try { await navigator.clipboard.writeText(window.location.href); status.textContent='Preview link copied.'; }
+    catch(e){ status.textContent='Copy the address from your browser to share this preview.'; }
+  });
+})();
+</script>
+</body></html>
