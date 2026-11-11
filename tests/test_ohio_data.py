@@ -19,6 +19,12 @@ class OhioDataTests(unittest.TestCase):
         self.assertTrue(any('.zip' in e for e in errors))
         self.assertTrue(any('.latitude' in e for e in errors))
 
+    def test_malformed_license_id_and_zip_are_reported_not_crashed(self):
+        bad = {**VALID, 'license_id': ['bad'], 'zip': 43215}
+        errors = validate(dataset(bad))
+        self.assertTrue(any('license_id' in e for e in errors))
+        self.assertTrue(any('.zip' in e for e in errors))
+
     def test_missing_review_date_is_rejected(self):
         data = dataset(VALID)
         data['last_reviewed'] = None
