@@ -91,9 +91,14 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
   await page.locator('#map .leaflet-marker-icon').click();
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
-  const link = page.locator('.leaflet-popup-content a', { hasText: 'Directions' });
-  await expect(link).toHaveAttribute('href', /google\.com\/maps\/dir\/\?api=1&destination=/);
-  await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  const popup = page.locator('.leaflet-popup-content');
+  await popup.locator('summary', { hasText: 'Directions' }).click();
+  const apple = popup.getByRole('link', { name: 'Apple Maps' });
+  const google = popup.getByRole('link', { name: 'Google Maps' });
+  await expect(apple).toHaveAttribute('href', /maps\.apple\.com\/\?daddr=/);
+  await expect(google).toHaveAttribute('href', /google\.com\/maps\/dir\/\?api=1&destination=/);
+  await expect(apple).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(google).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(page.locator('#mapStatus')).toContainText('1 reviewed Ohio dispensary');
 });
 
