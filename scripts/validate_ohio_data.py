@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Validate a staged Ohio dispensary directory; never publishes records."""
+import argparse
+import json
+from pathlib import Path
+
+REQUIRED = ('license_id', 'name', 'address', 'city', 'state', 'zip', 'status', 'source_url', 'verified_at')
+
+def validate(data):
+    errors = []
+    if data.get('schema_version') != 1:
+        errors.append('schema_version must be 1')
+    rows = data.get('dispensaries')
+    if not isinstance(rows, list):
+        return errors + ['dispensaries must be a list']
+    seen = set()
+    for i, row in enumerate(rows):
+        prefix = f'dispensaries[{i}]'
+        if not isinstance(row, dict):
+            errors.append(f'{prefix} must be an object')
+            continue
+        for field in REQUIRED:
+            if not isinstance(row.get(field), str) or not row[field].strip():
+                errors.append(f'{prefix}.{field} is required')
+        license_id = row.get('license_id')
+        if license_id in seen:
+            errors.append(f'{prefix}: duplicate license_id {license_id!r}')
+        if license_id:
+            seen.add(license_id)
+        if row.get('state') != 'OH':
+            errors.append(f'{prefix}.state must be OH')
+        zip_code = row.get('zip', '')
+        if not isinstance(zip_code, str) or len(zip_code) != 5 or not zip_code.isdigit():
+            errors.append(f'{prefix}.zip must be a five-digit string')
+        if row.get('status') not in ('operational', 'provisional', 'inactive'):
+            errors.append(f'{prefix}.status must be operational, provisional, or inactive')
+        for field, lower, upper in (('latitude', -90, 90), ('longitude', -180, 180)):
+            value = row.get(field)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not lower <= value <= upper):
+                errors.append(f'{prefix}.{field} must be a valid coordinate or null')
+        if (row.get('latitude') is None) != (row.get('longitude') is None):
+            errors.append(f'{prefix}: latitude and longitude must both be present or both null')
+    return errors
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', nargs='?', default='data/ohio-dispensaries.json')
+    args = parser.parse_args()
+    data = json.loads(Path(args.file).read_text(encoding='utf-8'))
+    errors = validate(data)
+    for error in errors:
+        print('ERROR:', error)
+    print(f'Validated {len(data.get("dispensaries", []))} records: {len(errors)} error(s)')
+    raise SystemExit(1 if errors else 0)
+
+if __name__ == '__main__':
+    main()
