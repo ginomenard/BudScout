@@ -70,6 +70,13 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 #map .bud-location-card a{display:inline-block;padding:9px 12px;border-radius:8px;background:#a6ed75;color:#102017;font-size:13px;font-weight:700;text-decoration:none}
 #map .bud-location-card a:focus-visible{outline:3px solid white;outline-offset:2px}
 
+
+#map .bud-directions summary{display:inline-block;cursor:pointer;padding:9px 12px;border-radius:8px;background:#a6ed75;color:#102017;font-size:13px;font-weight:700;list-style:none}
+#map .bud-directions summary::-webkit-details-marker{display:none}
+#map .bud-directions summary:focus-visible{outline:3px solid white;outline-offset:2px}
+#map .bud-directions-choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+#map .bud-directions-choices a{background:#304c37;color:#fff;border:1px solid #537159}
+
 .hidden{display:none}
 #map.leaflet-container{touch-action:none}
 #map .leaflet-tile-pane img{max-width:none!important;max-height:none!important}
@@ -166,6 +173,20 @@ let locationMarker=null;
 let storeMarkerLayer=null;
 let mapResizeObserver=null;
 function refreshMapSize(){if(!ohioMap)return;requestAnimationFrame(()=>{if(!map.classList.contains("hidden"))ohioMap.invalidateSize({pan:false,animate:false});});}
+function addDirectionsChoices(card,addressText){
+ const details=document.createElement("details");details.className="bud-directions";
+ const summary=document.createElement("summary");summary.textContent="Directions";
+ const choices=document.createElement("div");choices.className="bud-directions-choices";
+ const options=[
+  ["Apple Maps","https://maps.apple.com/?daddr="+encodeURIComponent(addressText)],
+  ["Google Maps","https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addressText)]
+ ];
+ options.forEach(([name,url])=>{
+  const link=document.createElement("a");link.textContent=name;link.href=url;
+  link.target="_blank";link.rel="noopener noreferrer";choices.appendChild(link);
+ });
+ details.append(summary,choices);card.appendChild(details);
+}
 function showMapPoint(lat,lon,label,zoom=12){
  initOhioMap();if(!ohioMap)return;
  refreshMapSize();
@@ -177,10 +198,8 @@ function showMapPoint(lat,lon,label,zoom=12){
  const card=document.createElement("div");card.className="bud-location-card";
  const heading=document.createElement("strong");heading.textContent=match?match.name:"Searched location";
  const address=document.createElement("p");address.textContent=addressText;
- const directions=document.createElement("a");directions.textContent="Get directions";
- directions.href="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addressText);
- directions.target="_blank";directions.rel="noopener noreferrer";
- card.append(heading,address,directions);
+ card.append(heading,address);
+ addDirectionsChoices(card,addressText);
  locationMarker.bindPopup(card,{maxWidth:260,autoPan:true,closeButton:true}).openPopup();
 }
 function locationFeedback(message){document.getElementById("locationFeedback").textContent=message;}
@@ -227,12 +246,9 @@ function renderVerifiedStoreMarkers(){
   const popup=document.createElement("div");
   const title=document.createElement("strong");title.textContent=store.name;
   const address=document.createElement("p");address.textContent=addressText;
-  const directions=document.createElement("a");
-  directions.textContent="Directions";
-  directions.href="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(addressText);
-  directions.target="_blank";directions.rel="noopener noreferrer";
   popup.className="bud-location-card";
-  popup.append(title,address,directions);
+  popup.append(title,address);
+  addDirectionsChoices(popup,addressText);
   L.marker([store.latitude,store.longitude]).addTo(storeMarkerLayer).bindPopup(popup);
  });
 }
