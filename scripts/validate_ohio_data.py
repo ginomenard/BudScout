@@ -37,9 +37,9 @@ def validate(data):
             if not isinstance(row.get(field), str) or not row[field].strip():
                 errors.append(f'{prefix}.{field} is required')
         license_id = row.get('license_id')
-        if license_id in seen:
-            errors.append(f'{prefix}: duplicate license_id {license_id!r}')
-        if license_id:
+        if isinstance(license_id, str) and license_id.strip():
+            if license_id in seen:
+                errors.append(f'{prefix}: duplicate license_id {license_id!r}')
             seen.add(license_id)
         source_url = row.get('source_url')
         if isinstance(source_url, str):
