@@ -18,3 +18,32 @@ Optional: latitude, longitude (both together or both null), phone, website, menu
 Run: `python3 scripts/validate_ohio_data.py` and `python3 -m unittest discover -s tests -p 'test_ohio_data.py'`.
 
 **Next milestone:** Implement a source-specific importer and change report after confirming the official data format and reuse restrictions. Avoid automated requests to public geocoders without checking rate limits and usage terms.
+
+
+## November 11, 2026: official-source candidate review and map integration
+
+Official certificate-of-operation listing (checked 2026-11-11):
+https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/dispensaries/dispensary-licenses
+
+A small factual batch of Ohio DCC-listed names and addresses is staged in
+`data/ohio-review-candidates.json`. **Candidates are not published to the map.**
+The DCC table provides the public business address and certificate-of-operation
+listing, but did not provide verified license IDs or usable, reconciled WGS84
+coordinates in the source material inspected. A public Ohio GIS FeatureServer
+appears to expose license and coordinate fields, but its individual records were
+not retrievable for comparison in this run:
+https://maps.ohio.gov/arcgis/rest/services/Hosted/Geocoded_Dispensaries_/FeatureServer/0
+
+Before promoting any candidate into `data/ohio-dispensaries.json`:
+1. Confirm the DCC listing is current and the data reuse terms permit publication.
+2. Match the correct *actual license ID* and operational status to the street address.
+3. Obtain and independently reconcile the WGS84 latitude/longitude; do not guess
+   coordinates or run bulk requests against public geocoding services.
+4. Record the HTTPS source URL, verified_at date, and top-level last_reviewed date;
+   have a human review the proposed diff before merging.
+5. Run the Python validator and mobile tests. Only operational records with all
+   review fields and Ohio coordinates render as pins, with Google Maps directions.
+
+The website now loads the reviewed JSON on page load, but the published dataset
+is intentionally empty. The UI keeps the honest empty-state message until
+a separately reviewed follow-up PR publishes verified locations.

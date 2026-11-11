@@ -2,7 +2,19 @@
 """Validate a staged Ohio dispensary directory; never publishes records."""
 import argparse
 import json
+import re
+from datetime import date
+from urllib.parse import urlparse
 from pathlib import Path
+
+def is_iso_date(value):
+    if not isinstance(value, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
+        return False
+    try:
+        date.fromisoformat(value)
+        return True
+    except ValueError:
+        return False
 
 REQUIRED = ('license_id', 'name', 'address', 'city', 'state', 'zip', 'status', 'source_url', 'verified_at')
 
@@ -13,6 +25,8 @@ def validate(data):
     rows = data.get('dispensaries')
     if not isinstance(rows, list):
         return errors + ['dispensaries must be a list']
+    if rows and not is_iso_date(data.get('last_reviewed')):
+        errors.append('last_reviewed must be an ISO date when records are published')
     seen = set()
     for i, row in enumerate(rows):
         prefix = f'dispensaries[{i}]'
@@ -23,10 +37,17 @@ def validate(data):
             if not isinstance(row.get(field), str) or not row[field].strip():
                 errors.append(f'{prefix}.{field} is required')
         license_id = row.get('license_id')
-        if license_id in seen:
-            errors.append(f'{prefix}: duplicate license_id {license_id!r}')
-        if license_id:
+        if isinstance(license_id, str) and license_id.strip():
+            if license_id in seen:
+                errors.append(f'{prefix}: duplicate license_id {license_id!r}')
             seen.add(license_id)
+        source_url = row.get('source_url')
+        if isinstance(source_url, str):
+            parsed = urlparse(source_url)
+            if parsed.scheme != 'https' or not parsed.netloc:
+                errors.append(f'{prefix}.source_url must be an HTTPS URL')
+        if not is_iso_date(row.get('verified_at')):
+            errors.append(f'{prefix}.verified_at must be an ISO date')
         if row.get('state') != 'OH':
             errors.append(f'{prefix}.state must be OH')
         zip_code = row.get('zip', '')
@@ -38,6 +59,10 @@ def validate(data):
             value = row.get(field)
             if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not lower <= value <= upper):
                 errors.append(f'{prefix}.{field} must be a valid coordinate or null')
+        lat, lon = row.get('latitude'), row.get('longitude')
+        if isinstance(lat, (int, float)) and not isinstance(lat, bool) and isinstance(lon, (int, float)) and not isinstance(lon, bool):
+            if not (38.3 <= lat <= 42 and -84.9 <= lon <= -80.4):
+                errors.append(f'{prefix}: coordinates must be within Ohio bounds')
         if (row.get('latitude') is None) != (row.get('longitude') is None):
             errors.append(f'{prefix}: latitude and longitude must both be present or both null')
     return errors

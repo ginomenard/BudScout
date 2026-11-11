@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "source": "Ohio Division of Cannabis Control — Dispensary Certificates of Operation",
+  "source_url": "https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/dispensaries/dispensary-licenses",
+  "observed_at": "2026-11-11",
+  "publication_status": "NOT_APPROVED_FOR_MAP",
+  "review_requirements": [
+    "confirm source reuse terms",
+    "reconcile actual license ID",
+    "independently verify WGS84 coordinates and address",
+    "human approval"
+  ],
+  "candidates": [
+    {
+      "name": "Greenleaf Apothecaries, LLC",
+      "address": "33113 Aurora Rd.",
+      "city": "Solon",
+      "state": "OH",
+      "zip": "44139",
+      "review_status": "needs_license_id_and_coordinates"
+    },
+    {
+      "name": "Amplify",
+      "address": "22803 Rockside Rd.",
+      "city": "Bedford",
+      "state": "OH",
+      "zip": "44146",
+      "review_status": "needs_license_id_and_coordinates"
+    },
+    {
+      "name": "Amplify",
+      "address": "1782 Coventry Rd.",
+      "city": "Cleveland Heights",
+      "state": "OH",
+      "zip": "44118",
+      "review_status": "needs_license_id_and_coordinates"
+    },
+    {
+      "name": "AYR Dispensary — Streetsboro",
+      "address": "9800 State Route 14, Ste.2",
+      "city": "Streetsboro",
+      "state": "OH",
+      "zip": "44241",
+      "review_status": "needs_license_id_and_coordinates"
+    }
+  ]
+}
