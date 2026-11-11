@@ -130,6 +130,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <div id="list"></div>
 
 <section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
+<section id="candidateLocations" class="panel hidden" aria-label="Ohio state-listed dispensary address lookup"><strong>Explore four Ohio state-listed dispensary addresses</strong><p class="small">Addresses appear on Ohio Division of Cannabis Control’s certificate-of-operation list. Tap a store to search its address and place a temporary location marker. This is an address search result, not a verified licensed-store pin; location accuracy depends on the map search service.</p><div id="candidateLocationButtons" class="chips"></div></section>
 <div id="map" class="hidden" aria-label="Interactive Ohio street map; reviewed dispensary pins appear when available"></div>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
 <div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
@@ -230,6 +231,24 @@ async function loadVerifiedDispensaries(){
  }
 }
 
+// DCC certificate-of-operation address lookup candidates; not published directory records.
+const dccCandidates=[
+ {name:"Greenleaf Apothecaries — Solon",address:"33113 Aurora Rd, Solon, OH 44139"},
+ {name:"Amplify — Bedford",address:"22803 Rockside Rd, Bedford, OH 44146"},
+ {name:"Amplify — Cleveland Heights",address:"1782 Coventry Rd, Cleveland Heights, OH 44118"},
+ {name:"AYR Dispensary — Streetsboro",address:"9800 State Route 14, Streetsboro, OH 44241"}
+];
+const candidateButtons=document.getElementById("candidateLocationButtons");
+dccCandidates.forEach(candidate=>{
+ const button=document.createElement("button");button.type="button";button.className="off";button.textContent="⌖ "+candidate.name;
+ button.addEventListener("click",()=>{
+  const field=document.getElementById("locationQuery");field.value=candidate.address;
+  const form=document.getElementById("locationForm");
+  form.requestSubmit(form.querySelector('button[type="submit"]'));
+ });
+ candidateButtons.appendChild(button);
+});
+
 const products=[
 
 {strain:"Blue Dream",brand:"North Coast",store:"Green Valley",grams:3.5,price:28,x:20,y:25},
@@ -294,6 +313,7 @@ list.classList.toggle("hidden",view!=="list");
 map.classList.toggle("hidden",view!=="map");
 document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
 document.getElementById("locationTools").classList.toggle("hidden",view!=="map");
+document.getElementById("candidateLocations").classList.toggle("hidden",view!=="map");
 if(view==="map"){initOhioMap();refreshMapSize();setTimeout(refreshMapSize,150);}
 
 document.getElementById("listBtn").className=view==="list"?"":"off";
