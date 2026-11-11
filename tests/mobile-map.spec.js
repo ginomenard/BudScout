@@ -74,3 +74,43 @@ test('location search handles no Ohio matches without moving the map', async ({ 
   await expect(page.locator('#locationFeedback')).toContainText('No matching Ohio location found');
   await expect(page.getByRole('button', { name: 'Search location' })).toBeEnabled();
 });
+
+
+test('reviewed operational dispensary renders a pin and safe directions link', async ({ page }) => {
+  // Fixture only: these are NOT real store coordinates or a published license.
+  const record = { license_id: 'TEST-ONLY-1', name: 'Fixture Reviewed Store',
+    address: '123 Test Ave', city: 'Columbus', state: 'OH', zip: '43215',
+    status: 'operational', source_url: 'https://example.org/test',
+    verified_at: '2026-11-11', latitude: 39.96, longitude: -83.0 };
+  await page.route('**/data/ohio-dispensaries.json', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ schema_version: 1, last_reviewed: '2026-11-11', dispensaries: [record] })
+  }));
+  await page.goto('/');
+  await page.locator('#mapBtn').click();
+  await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
+  await page.locator('#map .leaflet-marker-icon').click();
+  await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
+  const link = page.locator('.leaflet-popup-content a', { hasText: 'Directions' });
+  await expect(link).toHaveAttribute('href', /google\\.com\\/maps\\/dir\\/\\?api=1&destination=/);
+  await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(page.locator('#mapStatus')).toContainText('1 reviewed Ohio dispensary');
+});
+
+test('unreviewed or provisional entries never become map pins', async ({ page }) => {
+  await page.route('**/data/ohio-dispensaries.json', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ schema_version: 1, last_reviewed: '2026-11-11', dispensaries: [
+      { license_id: 'TEST-2', name: 'Provisional fixture', address: '1 Example St',
+        city: 'Columbus', state: 'OH', zip: '43215', status: 'provisional',
+        source_url: 'https://example.org', verified_at: '2026-11-11', latitude: 39.96, longitude: -83 },
+      { license_id: 'TEST-3', name: 'No coordinates', address: '2 Example St',
+        city: 'Columbus', state: 'OH', zip: '43215', status: 'operational',
+        source_url: 'https://example.org', verified_at: '2026-11-11', latitude: null, longitude: null }
+    ] })
+  }));
+  await page.goto('/');
+  await page.locator('#mapBtn').click();
+  await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(0);
+  await expect(page.locator('#mapStatus')).toContainText('No verified dispensary locations');
+});
