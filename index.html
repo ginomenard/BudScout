@@ -187,9 +187,9 @@ function isVerifiedMapStore(store){
   typeof store.name==="string" && store.name.trim().length>0 &&
   typeof store.address==="string" && store.address.trim().length>0 &&
   typeof store.city==="string" && store.city.trim().length>0 &&
-  typeof store.zip==="string" && /^\\d{5}$/.test(store.zip) &&
+  typeof store.zip==="string" && /^\d{5}$/.test(store.zip) &&
   typeof store.source_url==="string" && /^https:\/\//.test(store.source_url) &&
-  typeof store.verified_at==="string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(store.verified_at) &&
+  typeof store.verified_at==="string" && /^\d{4}-\d{2}-\d{2}$/.test(store.verified_at) &&
   Number.isFinite(store.latitude) && store.latitude>=38.3 && store.latitude<=42 &&
   Number.isFinite(store.longitude) && store.longitude>=-84.9 && store.longitude<=-80.4;
 }
@@ -217,7 +217,7 @@ async function loadVerifiedDispensaries(){
   if(!response.ok)throw Error("Directory unavailable");
   const data=await response.json();
   if(data.schema_version!==1 || !Array.isArray(data.dispensaries))throw Error("Invalid directory");
-  if(data.dispensaries.length && (typeof data.last_reviewed!=="string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(data.last_reviewed)))throw Error("Unreviewed directory");
+  if(data.dispensaries.length && (typeof data.last_reviewed!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed)))throw Error("Unreviewed directory");
   verifiedDispensaries=data.dispensaries.filter(isVerifiedMapStore);
   renderVerifiedStoreMarkers();
   status.textContent=verifiedDispensaries.length
