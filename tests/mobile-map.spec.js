@@ -100,7 +100,7 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await expect(apple).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(google).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(page.locator('#mapStatus')).toContainText('1 reviewed Ohio dispensary');
-  await expect(page.locator('#reviewedCount')).toHaveText('1 published');
+  await expect(page.locator('#reviewedCount')).toHaveText('1 shown · 1 published');
   const storeButton = page.getByRole('button', { name: 'Show Fixture Reviewed Store on map' });
   await expect(storeButton).toBeVisible();
   await storeButton.click();
@@ -129,4 +129,17 @@ test('unreviewed or provisional entries never become map pins', async ({ page })
   const official = page.getByRole('link', { name: /Ohio's official dispensary map/ });
   await expect(official).toHaveAttribute('href', /com\.ohio\.gov\/divisions-and-programs\/cannabis-control\/.*cannabis-dispensary-map/);
   await expect(official).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
+
+test('radius selection synchronizes reviewed store list and markers', async ({page})=>{
+ const base={address:'Fixture Rd',city:'Columbus',state:'OH',zip:'43215',status:'operational',source_url:'https://example.org/test',verified_at:'2026-11-11'};
+ await page.route('**/data/ohio-dispensaries.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({schema_version:1,last_reviewed:'2026-11-11',dispensaries:[{...base,license_id:'TEST-A',name:'Near Fixture',latitude:39.96,longitude:-83},{...base,license_id:'TEST-B',name:'Far Fixture',latitude:41.5,longitude:-81.7}]})}));
+ await page.route('https://nominatim.openstreetmap.org/search**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{lat:'39.96',lon:'-83',display_name:'Columbus, Ohio'}])}));
+ await page.goto('/');await page.locator('#mapBtn').click();await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(2);
+ await page.locator('#radiusMiles').selectOption('10');await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(0);
+ await page.locator('#locationQuery').fill('Columbus');await page.getByRole('button',{name:'Search location'}).click();
+ await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(1);await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
+ await expect(page.locator('#reviewedLocationList')).toContainText('Near Fixture');await expect(page.locator('#reviewedLocationList')).not.toContainText('Far Fixture');
+ await page.locator('#radiusMiles').selectOption('all');await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(2);await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(2);
 });
