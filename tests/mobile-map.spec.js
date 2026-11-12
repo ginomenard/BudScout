@@ -100,6 +100,12 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await expect(apple).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(google).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(page.locator('#mapStatus')).toContainText('1 reviewed Ohio dispensary');
+  await expect(page.locator('#reviewedCount')).toHaveText('1 published');
+  const storeButton = page.getByRole('button', { name: 'Show Fixture Reviewed Store on map' });
+  await expect(storeButton).toBeVisible();
+  await storeButton.click();
+  await expect.poll(() => page.evaluate(() => ohioMap.getZoom())).toBe(14);
+  await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
 });
 
 test('unreviewed or provisional entries never become map pins', async ({ page }) => {
@@ -118,4 +124,9 @@ test('unreviewed or provisional entries never become map pins', async ({ page })
   await page.locator('#mapBtn').click();
   await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(0);
   await expect(page.locator('#mapStatus')).toContainText('No verified dispensary locations');
+  await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(0);
+  await expect(page.locator('#reviewedEmpty')).toBeVisible();
+  const official = page.getByRole('link', { name: /Ohio's official dispensary map/ });
+  await expect(official).toHaveAttribute('href', /com\.ohio\.gov\/divisions-and-programs\/cannabis-control\/.*cannabis-dispensary-map/);
+  await expect(official).toHaveAttribute('rel', 'noopener noreferrer');
 });
