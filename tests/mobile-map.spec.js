@@ -103,8 +103,8 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await expect(page.locator('#reviewedCount')).toHaveText('1 published');
   const storeButton = page.getByRole('button', { name: 'Show Fixture Reviewed Store on map' });
   await expect(storeButton).toBeVisible();
-  await page.locator('.leaflet-popup-close-button').click();
   await storeButton.click();
+  await expect.poll(() => page.evaluate(() => ohioMap.getZoom())).toBe(14);
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
 });
 
