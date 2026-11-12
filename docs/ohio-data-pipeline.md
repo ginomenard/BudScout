@@ -47,3 +47,17 @@ Before promoting any candidate into `data/ohio-dispensaries.json`:
 The website now loads the reviewed JSON on page load, but the published dataset
 is intentionally empty. The UI keeps the honest empty-state message until
 a separately reviewed follow-up PR publishes verified locations.
+
+## November 12, 2026: map directory and official-source fallback
+
+The Map tab now includes a browsable list **only** for operational, reviewed records
+that pass the same pin eligibility gate. Selecting a list entry centers the map
+and opens its marker popup. While the reviewed JSON is empty, the list displays
+an explicit empty state and links to Ohio DCC's official interactive dispensary map:
+https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map
+
+The state map and certificate-of-operation listing were checked on 2026-11-12.
+They provide a public lookup, but the published BudScout directory remains empty:
+we have not reconciled actual license IDs and coordinates for the staged candidates.
+Do **not** convert address-lookup markers or fictional product listings into licensed
+store pins. A human-reviewed data PR is still required.
