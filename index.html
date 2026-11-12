@@ -77,6 +77,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 #map .bud-directions-choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
 #map .bud-directions-choices a{background:#304c37;color:#fff;border:1px solid #537159}
 
+.store-directory-list{display:grid;gap:8px;margin:10px 0}
+.store-directory-list .store-jump{display:block;width:100%;text-align:left;margin:0;background:#304c37;color:#eef7ee;border:1px solid #537159;white-space:normal}
+.store-directory-list .store-jump:hover{border-color:#a6ed75}
+.store-directory-list .store-jump span{display:block;font-size:13px;font-weight:400;margin-top:4px;color:#d4e4d6}
+.official-directory-link{display:inline-block;margin:10px 0 3px;padding:11px 13px;border-radius:10px;background:#a6ed75;color:#102017;font-weight:700;text-decoration:none}
+.official-directory-link:focus-visible{outline:3px solid white;outline-offset:2px}
 .hidden{display:none}
 #map.leaflet-container{touch-action:none}
 #map .leaflet-tile-pane img{max-width:none!important;max-height:none!important}
@@ -154,6 +160,13 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
 <section id="candidateLocations" class="panel hidden" aria-label="Ohio state-listed dispensary address lookup"><strong>Explore four Ohio state-listed dispensary addresses</strong><p class="small">Addresses appear on Ohio Division of Cannabis Control’s certificate-of-operation list. Tap a store to search its address and place a temporary location marker. This is an address search result, not a verified licensed-store pin; location accuracy depends on the map search service.</p><div id="candidateLocationButtons" class="chips"></div></section>
 <div id="map" class="hidden" aria-label="Interactive Ohio street map; reviewed dispensary pins appear when available"></div>
+<section id="reviewedLocations" class="panel hidden" aria-label="Reviewed Ohio dispensary locations">
+ <div class="meta"><strong>Reviewed dispensary locations</strong><span id="reviewedCount" class="small"></span></div>
+ <div id="reviewedLocationList" class="store-directory-list"></div>
+ <p id="reviewedEmpty" class="small">No reviewed dispensary pins have been published in BudScout yet. For current licensed locations, consult Ohio's official map.</p>
+ <a class="official-directory-link" href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer">Open Ohio's official dispensary map ↗</a>
+ <p class="small">Official map is maintained by Ohio DCC. BudScout's sample products and prices are not linked to licensed stores.</p>
+</section>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
 <div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
 
@@ -171,6 +184,7 @@ const ohioCenter=[40.4173,-82.9071];
 let ohioMap=null;
 let locationMarker=null;
 let storeMarkerLayer=null;
+const storeMarkersByLicense=new Map();
 let mapResizeObserver=null;
 function refreshMapSize(){if(!ohioMap)return;requestAnimationFrame(()=>{if(!map.classList.contains("hidden"))ohioMap.invalidateSize({pan:false,animate:false});});}
 function addDirectionsChoices(card,addressText){
@@ -237,10 +251,32 @@ function isVerifiedMapStore(store){
   Number.isFinite(store.latitude) && store.latitude>=38.3 && store.latitude<=42 &&
   Number.isFinite(store.longitude) && store.longitude>=-84.9 && store.longitude<=-80.4;
 }
+function renderReviewedStoreList(){
+ const container=document.getElementById("reviewedLocationList");
+ container.replaceChildren();
+ document.getElementById("reviewedCount").textContent=verifiedDispensaries.length+" published";
+ document.getElementById("reviewedEmpty").hidden=verifiedDispensaries.length>0;
+ verifiedDispensaries.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(store=>{
+  const button=document.createElement("button");button.type="button";button.className="store-jump";
+  const name=document.createElement("strong");name.textContent=store.name;
+  const detail=document.createElement("span");detail.textContent=[store.address,store.city,"OH "+store.zip].join(", ");
+  button.append(name,detail);
+  button.setAttribute("aria-label","Show "+store.name+" on map");
+  button.addEventListener("click",()=>{
+   const marker=storeMarkersByLicense.get(store.license_id);
+   if(!ohioMap||!marker)return;
+   ohioMap.setView([store.latitude,store.longitude],14);
+   marker.openPopup();
+   document.getElementById("map").scrollIntoView({block:"nearest"});
+  });
+  container.appendChild(button);
+ });
+}
 function renderVerifiedStoreMarkers(){
  if(!ohioMap)return;
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
  else storeMarkerLayer.clearLayers();
+ storeMarkersByLicense.clear();
  verifiedDispensaries.forEach(store=>{
   const addressText=[store.address,store.city,"OH "+store.zip].join(", ");
   const popup=document.createElement("div");
@@ -249,7 +285,8 @@ function renderVerifiedStoreMarkers(){
   popup.className="bud-location-card";
   popup.append(title,address);
   addDirectionsChoices(popup,addressText);
-  L.marker([store.latitude,store.longitude]).addTo(storeMarkerLayer).bindPopup(popup);
+  const marker=L.marker([store.latitude,store.longitude]).addTo(storeMarkerLayer).bindPopup(popup);
+  storeMarkersByLicense.set(store.license_id,marker);
  });
 }
 async function loadVerifiedDispensaries(){
@@ -262,12 +299,14 @@ async function loadVerifiedDispensaries(){
   if(data.dispensaries.length && (typeof data.last_reviewed!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed)))throw Error("Unreviewed directory");
   verifiedDispensaries=data.dispensaries.filter(isVerifiedMapStore);
   renderVerifiedStoreMarkers();
+  renderReviewedStoreList();
   status.textContent=verifiedDispensaries.length
    ? verifiedDispensaries.length+" reviewed Ohio dispensary location(s) shown. Demo product prices are fictional."
    : "Ohio map preview. No verified dispensary locations published yet; fictional product listings are not plotted.";
  }catch(error){
   verifiedDispensaries=[];
   renderVerifiedStoreMarkers();
+  renderReviewedStoreList();
   status.textContent="Verified dispensary directory unavailable. Map and location search still work; no store pins shown.";
  }
 }
@@ -355,6 +394,7 @@ map.classList.toggle("hidden",view!=="map");
 document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
 document.getElementById("locationTools").classList.toggle("hidden",view!=="map");
 document.getElementById("candidateLocations").classList.toggle("hidden",view!=="map");
+document.getElementById("reviewedLocations").classList.toggle("hidden",view!=="map");
 if(view==="map"){initOhioMap();refreshMapSize();setTimeout(refreshMapSize,150);}
 
 document.getElementById("listBtn").className=view==="list"?"":"off";
