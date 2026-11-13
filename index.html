@@ -111,6 +111,23 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 .hidden{display:none}
 
+
+:root{--bud-lime:#a6f54d}
+body{background:radial-gradient(ellipse at top,#123321,#0b1710 55%);padding-bottom:90px}
+h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
+.panel,.item{background:#11281b;border-color:#35533d}
+#map .bud-store-pin{background:transparent;border:0}
+#map .bud-store-pin svg{width:38px;height:48px;overflow:visible;filter:drop-shadow(0 3px 4px #0009)}
+#map .bud-pin-body{fill:#10291b;stroke:#a6f54d;stroke-width:3}
+#map .bud-pin-leaf{fill:#a6f54d}
+#map .bud-store-pin.bud-pin-selected svg{filter:drop-shadow(0 0 9px #a6f54d)}
+#map .bud-store-pin:focus-visible{outline:3px solid white}
+.bud-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:1100;display:flex;justify-content:space-around;background:#0a1a12f5;border-top:1px solid #375640;padding:8px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+.bud-bottom-nav button{flex:1;display:flex;align-items:center;flex-direction:column;gap:4px;background:transparent!important;color:#c1d0c3;font-size:12px;margin:0;padding:8px 3px}
+.bud-bottom-nav button[aria-current=page]{color:#a6f54d;background:#1a3925!important}
+.bud-bottom-nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bud-page[hidden]{display:none!important}
+@media(min-width:800px){.bud-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(750px,100%);border:1px solid #375640;border-radius:18px 18px 0 0}}
 </style>
 
 </head>
@@ -119,9 +136,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 <main>
 
-<h1>🌿 BudScout</h1>
+<h1><span style="color:#a6f54d">✦</span> BudScout</h1>
 
-<h2>Find the product.<br>Compare the price.</h2>
+<section id="budHome" class="bud-page"><h2>Find the product.<br>Compare the price.</h2><p>Explore Ohio dispensaries and compare products as verified pricing becomes available.</p></section><section id="budProducts" class="bud-page" hidden><h2>Compare products</h2>
 
 <p>Search by strain, brand, or dispensary. Demo listings only.</p>
 
@@ -157,7 +174,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 <div id="list"></div>
 
-<section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
+</section><section id="budMap" class="bud-page" hidden><h2>Explore dispensaries</h2><section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
 <section id="candidateLocations" class="panel hidden" aria-label="Ohio state-listed dispensary address lookup"><strong>Explore four Ohio state-listed dispensary addresses</strong><p class="small">Addresses appear on Ohio Division of Cannabis Control’s certificate-of-operation list. Tap a store to search its address and place a temporary location marker. This is an address search result, not a verified licensed-store pin; location accuracy depends on the map search service.</p><div id="candidateLocationButtons" class="chips"></div></section>
 <section id="radiusTools" class="panel hidden"><label for="radiusMiles"><strong>Verified store search radius</strong></label><select id="radiusMiles"><option value="all">All Ohio</option><option value="5">5 miles</option><option value="10">10 miles</option><option value="25">25 miles</option><option value="50">50 miles</option></select><p id="radiusFeedback" class="small" role="status">Choose a city, address, or your location before selecting a radius.</p></section>
 <div id="map" class="hidden" aria-label="Interactive Ohio street map; reviewed dispensary pins appear when available"></div>
@@ -169,11 +186,16 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
  <p class="small">Official map is maintained by Ohio DCC. BudScout's sample products and prices are not linked to licensed stores.</p>
 </section>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
-<div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
+</section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
 
 <p class="small">Product listings and prices are fictional examples. Only separately reviewed, operational dispensaries may appear as map pins; inventory is not verified. Map tiles © OpenStreetMap contributors. No ordering.</p>
 
-</main>
+<nav class="bud-bottom-nav" aria-label="Main navigation">
+<button type="button" data-bud-page="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10h-6v-7H9v7H3z"/></svg>Home</button>
+<button type="button" data-bud-page="products"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg>Search</button>
+<button type="button" data-bud-page="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 9 3l6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg>Map</button>
+<button type="button" data-bud-page="deals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18l-8-5-8 5z"/></svg>Deals</button>
+</nav></main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
@@ -285,6 +307,7 @@ function renderReviewedStoreList(){
   container.appendChild(button);
  });
 }
+const budStoreIcon=L.divIcon({className:"bud-store-pin",iconSize:[38,48],iconAnchor:[19,46],popupAnchor:[0,-42],html:'<svg viewBox="0 0 38 48" aria-hidden="true"><path class="bud-pin-body" d="M19 2C9 2 3 9 3 19c0 13 16 26 16 26s16-13 16-26C35 9 29 2 19 2z"/><path class="bud-pin-leaf" d="M19 9c-3 5-3 8-3 11-2-3-5-5-8-6 0 6 3 9 7 10l-5 2 7 1v5h3v-5l8-1-6-2c5-2 7-5 8-10-4 1-7 3-9 6 0-4 0-7-2-11z"/></svg>'});
 function renderVerifiedStoreMarkers(){
  if(!ohioMap)return;
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
@@ -298,7 +321,9 @@ function renderVerifiedStoreMarkers(){
   popup.className="bud-location-card";
   popup.append(title,address);
   addDirectionsChoices(popup,addressText);
-  const marker=L.marker([store.latitude,store.longitude]).addTo(storeMarkerLayer).bindPopup(popup);
+  const marker=L.marker([store.latitude,store.longitude],{icon:budStoreIcon,title:store.name,alt:store.name+" dispensary"}).addTo(storeMarkerLayer).bindPopup(popup);
+  marker.on("popupopen",()=>marker.getElement()?.classList.add("bud-pin-selected"));
+  marker.on("popupclose",()=>marker.getElement()?.classList.remove("bud-pin-selected"));
   storeMarkersByLicense.set(store.license_id,marker);
  });
 }
@@ -467,7 +492,20 @@ document.getElementById("resetOhio").addEventListener("click",()=>{
 });
 window.addEventListener("resize",refreshMapSize);
 window.addEventListener("orientationchange",()=>setTimeout(refreshMapSize,200));
-render();
+const budPages={home:"budHome",products:"budProducts",map:"budMap",deals:"budDeals"};
+function showBudPage(page){
+ if(!budPages[page])return;
+ Object.entries(budPages).forEach(([key,id])=>document.getElementById(id).hidden=key!==page);
+ document.querySelectorAll("[data-bud-page]").forEach(button=>{
+  if(button.dataset.budPage===page)button.setAttribute("aria-current","page");
+  else button.removeAttribute("aria-current");
+ });
+ view=page==="map"?"map":"list";
+ render();
+ if(page==="map")setTimeout(refreshMapSize,100);
+}
+document.querySelectorAll("[data-bud-page]").forEach(button=>button.addEventListener("click",()=>showBudPage(button.dataset.budPage)));
+showBudPage("home");
 loadVerifiedDispensaries();
 
 </script>
