@@ -186,7 +186,7 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
  <p class="small">Official map is maintained by Ohio DCC. BudScout's sample products and prices are not linked to licensed stores.</p>
 </section>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
-</section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
+<div id="directoryProvenance" class="panel" aria-label="Dispensary data source and freshness"><strong>Where do these locations come from?</strong><p id="directoryFreshness" class="small" role="status">Loading directory source and review date…</p><p class="small">These are state GIS directory records, not a live license-status check. Operating status, address, and hours may change. Confirm with the <a href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer" style="color:#a6ed75">Ohio DCC official map</a> before visiting. Sample product listings are fictional.</p></div></section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
 
 <p class="small">Product listings and prices are fictional examples. Only separately reviewed, operational dispensaries may appear as map pins; inventory is not verified. Map tiles © OpenStreetMap contributors. No ordering.</p>
 
@@ -336,6 +336,12 @@ async function loadVerifiedDispensaries(){
   if(data.schema_version!==1 || !Array.isArray(data.dispensaries))throw Error("Invalid directory");
   if(data.dispensaries.length && (typeof data.last_reviewed!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed)))throw Error("Unreviewed directory");
   verifiedDispensaries=data.dispensaries.filter(isVerifiedMapStore);
+  const freshness=document.getElementById("directoryFreshness");
+  const reviewDate=typeof data.last_reviewed==="string" && /^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed) ? data.last_reviewed : null;
+  const age=reviewDate?Math.floor((Date.now()-Date.parse(reviewDate+"T00:00:00Z"))/86400000):null;
+  freshness.textContent=reviewDate
+   ? "Directory review recorded: "+reviewDate+". "+(age>30?"This snapshot is over 30 days old; confirm current license status with Ohio DCC.":"This is a dated snapshot, not real-time license verification.")
+   : "No directory review date available. Confirm current license status with Ohio DCC.";
   updateRadiusResults();
   status.textContent=verifiedDispensaries.length
    ? verifiedDispensaries.length+" reviewed Ohio dispensary location(s) shown. Demo product prices are fictional."
@@ -345,6 +351,7 @@ async function loadVerifiedDispensaries(){
   renderVerifiedStoreMarkers();
   renderReviewedStoreList();
   status.textContent="Verified dispensary directory unavailable. Map and location search still work; no store pins shown.";
+  document.getElementById("directoryFreshness").textContent="Directory unavailable; no review date can be confirmed.";
  }
 }
 
