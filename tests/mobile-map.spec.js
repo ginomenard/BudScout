@@ -146,3 +146,24 @@ test('radius selection synchronizes reviewed store list and markers', async ({pa
  await expect(page.locator('#reviewedLocationList')).toContainText('Near Fixture');await expect(page.locator('#reviewedLocationList')).not.toContainText('Far Fixture');
  await page.locator('#radiusMiles').selectOption('all');await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(2);await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(2);
 });
+
+test('map explains Ohio GIS provenance and snapshot date without implying live license checks', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-bud-page="map"]').click();
+  const provenance = page.locator('#directoryProvenance');
+  await expect(provenance).toBeVisible();
+  await expect(page.locator('#directoryFreshness')).toContainText('Directory review recorded: 2026-11-13');
+  await expect(provenance).toContainText('not a live license-status check');
+  await expect(provenance.getByRole('link', { name: 'Ohio DCC official map' })).toHaveAttribute('href', /com\\.ohio\\.gov/);
+  await expect(provenance).toContainText('Sample product listings are fictional');
+});
+
+test('map warns when a directory snapshot is older than 30 days', async ({ page }) => {
+  await page.route('**/data/ohio-dispensaries.json', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ schema_version: 1, last_reviewed: '2025-01-01', dispensaries: [] })
+  }));
+  await page.goto('/');
+  await page.locator('[data-bud-page="map"]').click();
+  await expect(page.locator('#directoryFreshness')).toContainText('over 30 days old');
+});
