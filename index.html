@@ -159,6 +159,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 <section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
 <section id="candidateLocations" class="panel hidden" aria-label="Ohio state-listed dispensary address lookup"><strong>Explore four Ohio state-listed dispensary addresses</strong><p class="small">Addresses appear on Ohio Division of Cannabis Control’s certificate-of-operation list. Tap a store to search its address and place a temporary location marker. This is an address search result, not a verified licensed-store pin; location accuracy depends on the map search service.</p><div id="candidateLocationButtons" class="chips"></div></section>
+<section id="radiusTools" class="panel hidden"><label for="radiusMiles"><strong>Verified store search radius</strong></label><select id="radiusMiles"><option value="all">All Ohio</option><option value="5">5 miles</option><option value="10">10 miles</option><option value="25">25 miles</option><option value="50">50 miles</option></select><p id="radiusFeedback" class="small" role="status">Choose a city, address, or your location before selecting a radius.</p></section>
 <div id="map" class="hidden" aria-label="Interactive Ohio street map; reviewed dispensary pins appear when available"></div>
 <section id="reviewedLocations" class="panel hidden" aria-label="Reviewed Ohio dispensary locations">
  <div class="meta"><strong>Reviewed dispensary locations</strong><span id="reviewedCount" class="small"></span></div>
@@ -184,6 +185,7 @@ const ohioCenter=[40.4173,-82.9071];
 let ohioMap=null;
 let locationMarker=null;
 let storeMarkerLayer=null;
+let radiusCircle=null,searchCenter=null,displayedDispensaries=[];
 const storeMarkersByLicense=new Map();
 let mapResizeObserver=null;
 function refreshMapSize(){if(!ohioMap)return;requestAnimationFrame(()=>{if(!map.classList.contains("hidden"))ohioMap.invalidateSize({pan:false,animate:false});});}
@@ -205,6 +207,7 @@ function showMapPoint(lat,lon,label,zoom=12){
  initOhioMap();if(!ohioMap)return;
  refreshMapSize();
  ohioMap.setView([lat,lon],zoom);
+ searchCenter=[lat,lon];updateRadiusResults();
  if(locationMarker)ohioMap.removeLayer(locationMarker);
  locationMarker=L.circleMarker([lat,lon],{radius:9,color:"#102017",fillColor:"#a6ed75",fillOpacity:1,weight:2}).addTo(ohioMap);
  const match=dccCandidates.find(candidate=>candidate.address===document.getElementById("locationQuery").value.trim());
@@ -234,7 +237,7 @@ function initOhioMap(){
   mapResizeObserver.observe(document.getElementById("map"));
  }
  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"}).addTo(ohioMap);
- renderVerifiedStoreMarkers();
+ updateRadiusResults();
 }
 
 // The published directory is reviewed separately from fictional demo products.
@@ -251,15 +254,25 @@ function isVerifiedMapStore(store){
   Number.isFinite(store.latitude) && store.latitude>=38.3 && store.latitude<=42 &&
   Number.isFinite(store.longitude) && store.longitude>=-84.9 && store.longitude<=-80.4;
 }
+function milesBetween(a,b){const r=Math.PI/180,dLat=(b[0]-a[0])*r,dLon=(b[1]-a[1])*r,h=Math.sin(dLat/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;return 3958.7613*2*Math.asin(Math.min(1,Math.sqrt(h)));}
+function updateRadiusResults(){
+ const chosen=document.getElementById("radiusMiles").value,miles=chosen==="all"?null:Number(chosen);
+ if(radiusCircle&&ohioMap){ohioMap.removeLayer(radiusCircle);radiusCircle=null;}
+ if(miles!==null&&searchCenter&&ohioMap)radiusCircle=L.circle(searchCenter,{radius:miles*1609.344,color:"#a6ed75",weight:2,fillOpacity:0.07,interactive:false}).addTo(ohioMap);
+ displayedDispensaries=verifiedDispensaries.filter(store=>miles===null||(searchCenter&&milesBetween(searchCenter,[store.latitude,store.longitude])<=miles));
+ if(searchCenter)displayedDispensaries.sort((a,b)=>milesBetween(searchCenter,[a.latitude,a.longitude])-milesBetween(searchCenter,[b.latitude,b.longitude]));
+ document.getElementById("radiusFeedback").textContent=miles===null?"Showing all reviewed Ohio stores.":!searchCenter?"Search a city, address, or use your location to activate the "+miles+"-mile radius.":displayedDispensaries.length+" reviewed store(s) within "+miles+" miles.";
+ renderVerifiedStoreMarkers();renderReviewedStoreList();
+}
 function renderReviewedStoreList(){
  const container=document.getElementById("reviewedLocationList");
  container.replaceChildren();
- document.getElementById("reviewedCount").textContent=verifiedDispensaries.length+" published";
- document.getElementById("reviewedEmpty").hidden=verifiedDispensaries.length>0;
- verifiedDispensaries.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(store=>{
+ document.getElementById("reviewedCount").textContent=displayedDispensaries.length+" shown · "+verifiedDispensaries.length+" published";
+ document.getElementById("reviewedEmpty").hidden=displayedDispensaries.length>0;
+ displayedDispensaries.slice().sort((a,b)=>searchCenter?milesBetween(searchCenter,[a.latitude,a.longitude])-milesBetween(searchCenter,[b.latitude,b.longitude]):a.name.localeCompare(b.name)).forEach(store=>{
   const button=document.createElement("button");button.type="button";button.className="store-jump";
   const name=document.createElement("strong");name.textContent=store.name;
-  const detail=document.createElement("span");detail.textContent=[store.address,store.city,"OH "+store.zip].join(", ");
+  const detail=document.createElement("span");detail.textContent=[store.address,store.city,"OH "+store.zip].join(", ")+(searchCenter?" · "+milesBetween(searchCenter,[store.latitude,store.longitude]).toFixed(1)+" mi":"");
   button.append(name,detail);
   button.setAttribute("aria-label","Show "+store.name+" on map");
   button.addEventListener("click",()=>{
@@ -277,7 +290,7 @@ function renderVerifiedStoreMarkers(){
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
  else storeMarkerLayer.clearLayers();
  storeMarkersByLicense.clear();
- verifiedDispensaries.forEach(store=>{
+ displayedDispensaries.forEach(store=>{
   const addressText=[store.address,store.city,"OH "+store.zip].join(", ");
   const popup=document.createElement("div");
   const title=document.createElement("strong");title.textContent=store.name;
@@ -298,8 +311,7 @@ async function loadVerifiedDispensaries(){
   if(data.schema_version!==1 || !Array.isArray(data.dispensaries))throw Error("Invalid directory");
   if(data.dispensaries.length && (typeof data.last_reviewed!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed)))throw Error("Unreviewed directory");
   verifiedDispensaries=data.dispensaries.filter(isVerifiedMapStore);
-  renderVerifiedStoreMarkers();
-  renderReviewedStoreList();
+  updateRadiusResults();
   status.textContent=verifiedDispensaries.length
    ? verifiedDispensaries.length+" reviewed Ohio dispensary location(s) shown. Demo product prices are fictional."
    : "Ohio map preview. No verified dispensary locations published yet; fictional product listings are not plotted.";
@@ -394,6 +406,7 @@ map.classList.toggle("hidden",view!=="map");
 document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
 document.getElementById("locationTools").classList.toggle("hidden",view!=="map");
 document.getElementById("candidateLocations").classList.toggle("hidden",view!=="map");
+document.getElementById("radiusTools").classList.toggle("hidden",view!=="map");
 document.getElementById("reviewedLocations").classList.toggle("hidden",view!=="map");
 if(view==="map"){initOhioMap();refreshMapSize();setTimeout(refreshMapSize,150);}
 
@@ -444,9 +457,11 @@ document.getElementById("useLocation").addEventListener("click",()=>{
   locationFeedback("Map centered on your current location. Location was not saved.");
  },error=>locationFeedback(error.code===1?"Location permission was denied. You can search by city or ZIP instead.":"Unable to determine your location. Try searching by city or ZIP."),{enableHighAccuracy:false,timeout:12000,maximumAge:60000});
 });
+document.getElementById("radiusMiles").addEventListener("change",updateRadiusResults);
 document.getElementById("resetOhio").addEventListener("click",()=>{
  initOhioMap();if(!ohioMap)return;
  ohioMap.setView(ohioCenter,7);
+ searchCenter=null;updateRadiusResults();
  if(locationMarker){ohioMap.removeLayer(locationMarker);locationMarker=null;}
  locationFeedback("Map reset to Ohio.");
 });
