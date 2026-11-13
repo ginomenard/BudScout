@@ -58,10 +58,11 @@ test('Ohio location search centers map without relying on live geocoding', async
   await page.locator('#locationQuery').fill('Avon');
   await page.getByRole('button', { name: 'Search location' }).click();
   await expect(page.locator('#locationFeedback')).toContainText('Map centered on Avon, Ohio, USA');
-  await expect(page.locator('#map .leaflet-interactive')).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => Boolean(locationMarker && ohioMap.hasLayer(locationMarker)))).toBe(true);
   await page.locator('#resetOhio').click();
   await expect(page.locator('#locationFeedback')).toHaveText('Map reset to Ohio.');
-  await expect(page.locator('#map .leaflet-interactive')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => locationMarker === null)).toBe(true);
+  await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(232);
 });
 
 test('location search handles no Ohio matches without moving the map', async ({ page }) => {
