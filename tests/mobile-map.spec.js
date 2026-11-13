@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test('Ohio map fills its container and remains usable after drag and view switches', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /map/i }).first().click();
+  await page.locator('[data-bud-page="map"]').click();
   const map = page.locator('#map');
   await expect(map).toBeVisible();
   await expect.poll(async () => map.evaluate(el => Boolean(el._leaflet_id))).toBe(true);
@@ -26,14 +26,15 @@ test('Ohio map fills its container and remains usable after drag and view switch
   await page.mouse.move(box.x + box.width * .35, box.y + box.height * .55, { steps: 10 });
   await page.mouse.up();
   await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
-  await page.getByRole('button', { name: /list/i }).first().click();
-  await page.getByRole('button', { name: /map/i }).first().click();
+  await page.locator('[data-bud-page="products"]').click();
+  await page.locator('[data-bud-page="map"]').click();
   await expect(map).toBeVisible();
   await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
 });
 
 test('demo product comparison still works', async ({ page }) => {
   await page.goto('/');
+  await page.locator('[data-bud-page="products"]').click();
   await page.getByLabel('Search products').fill('Blue Dream');
   await expect(page.locator('#count')).toContainText('4 of');
   await page.locator('[data-compare]').first().check();
@@ -54,7 +55,7 @@ test('Ohio location search centers map without relying on live geocoding', async
     });
   });
   await page.goto('/');
-  await page.locator('#mapBtn').click();
+  await page.locator('[data-bud-page="map"]').click();
   await page.locator('#locationQuery').fill('Avon');
   await page.getByRole('button', { name: 'Search location' }).click();
   await expect(page.locator('#locationFeedback')).toContainText('Map centered on Avon, Ohio, USA');
@@ -69,7 +70,7 @@ test('location search handles no Ohio matches without moving the map', async ({ 
   await page.route('https://nominatim.openstreetmap.org/search**', route =>
     route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.goto('/');
-  await page.locator('#mapBtn').click();
+  await page.locator('[data-bud-page="map"]').click();
   await page.locator('#locationQuery').fill('Not a real Ohio city');
   await page.getByRole('button', { name: 'Search location' }).click();
   await expect(page.locator('#locationFeedback')).toContainText('No matching Ohio location found');
@@ -88,8 +89,9 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
     body: JSON.stringify({ schema_version: 1, last_reviewed: '2026-11-11', dispensaries: [record] })
   }));
   await page.goto('/');
-  await page.locator('#mapBtn').click();
+  await page.locator('[data-bud-page="map"]').click();
   await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
+  await expect(page.locator('#map .bud-store-pin svg')).toHaveCount(1);
   await page.locator('#map .leaflet-marker-icon').click();
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
   const popup = page.locator('.leaflet-popup-content');
@@ -122,7 +124,7 @@ test('unreviewed or provisional entries never become map pins', async ({ page })
     ] })
   }));
   await page.goto('/');
-  await page.locator('#mapBtn').click();
+  await page.locator('[data-bud-page="map"]').click();
   await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(0);
   await expect(page.locator('#mapStatus')).toContainText('No verified dispensary locations');
   await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(0);
@@ -137,7 +139,7 @@ test('radius selection synchronizes reviewed store list and markers', async ({pa
  const base={address:'Fixture Rd',city:'Columbus',state:'OH',zip:'43215',status:'operational',source_url:'https://example.org/test',verified_at:'2026-11-11'};
  await page.route('**/data/ohio-dispensaries.json',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({schema_version:1,last_reviewed:'2026-11-11',dispensaries:[{...base,license_id:'TEST-A',name:'Near Fixture',latitude:39.96,longitude:-83},{...base,license_id:'TEST-B',name:'Far Fixture',latitude:41.5,longitude:-81.7}]})}));
  await page.route('https://nominatim.openstreetmap.org/search**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{lat:'39.96',lon:'-83',display_name:'Columbus, Ohio'}])}));
- await page.goto('/');await page.locator('#mapBtn').click();await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(2);
+ await page.goto('/');await page.locator('[data-bud-page="map"]').click();await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(2);
  await page.locator('#radiusMiles').selectOption('10');await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(0);
  await page.locator('#locationQuery').fill('Columbus');await page.getByRole('button',{name:'Search location'}).click();
  await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(1);await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
