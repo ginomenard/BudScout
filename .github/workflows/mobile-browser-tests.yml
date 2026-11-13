@@ -16,6 +16,8 @@ jobs:
           node-version: '22'
       - run: python3 scripts/validate_ohio_data.py
       - run: python3 -m unittest discover -s tests -p "test_ohio_data.py"
+      - run: python3 scripts/validate_offers.py
+      - run: python3 -m unittest discover -s tests -p "test_offers.py"
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
