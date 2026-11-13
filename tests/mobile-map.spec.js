@@ -154,7 +154,7 @@ test('map explains Ohio GIS provenance and snapshot date without implying live l
   await expect(provenance).toBeVisible();
   await expect(page.locator('#directoryFreshness')).toContainText('Directory review recorded: 2026-11-13');
   await expect(provenance).toContainText('not a live license-status check');
-  await expect(provenance.getByRole('link', { name: 'Ohio DCC official map' })).toHaveAttribute('href', /com\\.ohio\\.gov/);
+  await expect(provenance.getByRole('link', { name: 'Ohio DCC official map' })).toHaveAttribute('href', 'https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map');
   await expect(provenance).toContainText('Sample product listings are fictional');
 });
 
