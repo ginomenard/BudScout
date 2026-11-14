@@ -1,0 +1,200 @@
+{
+  "_notice": {
+    "freshness_warning": "Leafly copies accessible during research were crawled 2026-04-05. Do NOT treat these values as current prices.",
+    "record_status": "ILLUSTRATIVE — structured after a real menu structure observed on 2026-11-13 (BEYOND/HELLO Oxford, Jane store 5403). Product facts (brand &Shine, 1g cartridge, $25.00, sale badges up to 35% off on that menu) reflect fields actually displayed; this exact item/price pairing was not isolated as a single verified record, so the record as a whole is an EXAMPLE of the format, not verified live data.",
+    "schema": "budscout_product_schema.json",
+    "publication_policy": "Never publish these records: all authorization_basis values are none. Illustrative fixtures only."
+  },
+  "examples": [
+    {
+      "availability": {
+        "customer_segment": "both",
+        "quantity": null,
+        "status": "in_stock"
+      },
+      "canonical_product": {
+        "brand_normalized": "&Shine",
+        "canonical_product_id": "prod_andshine_cartridge_1g_example",
+        "category": "vape",
+        "form": "cartridge",
+        "potency": {
+          "potency_basis": "label_claim",
+          "thc_percent": null
+        },
+        "product_name_normalized": "Cartridge 1g (strain as listed on source menu)",
+        "strain": {
+          "name": null,
+          "type": "sativa"
+        }
+      },
+      "dispensary": {
+        "city": "Oxford",
+        "license_id": "CCD000104-00",
+        "menu_url": "https://www.iheartjane.com/stores/5403/pure-iconic-ohio",
+        "name": "BEYOND / HELLO – Oxford"
+      },
+      "freshness": {
+        "retrieved_at": "2026-11-13T00:00:00-05:00",
+        "source_updated_at": null,
+        "stale_after": "2026-11-14T00:00:00-05:00"
+      },
+      "offer_id": "off_EXAMPLE_oxford_jane_001",
+      "package": {
+        "count": 1,
+        "weight_display_source": "(1G)",
+        "weight_g": 1
+      },
+      "price": {
+        "currency": "USD",
+        "discount": {
+          "description_source": "30% OFF / 35% OFF badges shown across this menu (item-level badge not isolated)",
+          "eligibility": "all_customers",
+          "ends_at": null,
+          "percent_off": null,
+          "sale_price": null,
+          "starts_at": null,
+          "type": "menu_sale"
+        },
+        "effective_price": 25,
+        "list_price": 25,
+        "price_per_gram": null,
+        "tax_included": false
+      },
+      "provenance": {
+        "authorization_basis": "none",
+        "provider": "jane",
+        "raw_payload_ref": null,
+        "retrieval_method": "manual_entry"
+      },
+      "source_listing": {
+        "source_brand": "&Shine",
+        "source_description": null,
+        "source_name": "(1G) cartridge listing, strain names incl. Blue Dream / Durban Poison seen on menu",
+        "source_sku_id": null,
+        "source_url": "https://www.iheartjane.com/stores/5403/pure-iconic-ohio"
+      }
+    },
+    {
+      "availability": {
+        "customer_segment": null,
+        "quantity": null,
+        "status": "out_of_stock"
+      },
+      "canonical_product": {
+        "brand_normalized": "Pure Ohio Wellness",
+        "canonical_product_id": "prod_pureohiowellness_jokerz_flower_14_15g",
+        "category": "flower",
+        "form": "whole flower",
+        "potency": {
+          "potency_basis": "label_claim",
+          "thc_percent": 23.8
+        },
+        "product_name_normalized": "Jokerz",
+        "strain": {
+          "name": "Jokerz",
+          "type": "indica"
+        }
+      },
+      "dispensary": {
+        "city": "Lorain",
+        "license_id": "CCD000065-00",
+        "menu_url": "https://www.iheartjane.com/stores/756",
+        "name": "RISE – Lorain"
+      },
+      "freshness": {
+        "retrieved_at": "2026-11-13T00:00:00-05:00",
+        "source_updated_at": null,
+        "stale_after": "2026-11-14T00:00:00-05:00"
+      },
+      "offer_id": "off_VERIFIED_EXAMPLE_rise_lorain_jokerz",
+      "package": {
+        "count": 1,
+        "weight_display_source": "14.15g",
+        "weight_g": 14.15
+      },
+      "price": {
+        "currency": "USD",
+        "discount": null,
+        "effective_price": null,
+        "list_price": null,
+        "price_per_gram": null,
+        "tax_included": false
+      },
+      "provenance": {
+        "authorization_basis": "none",
+        "provider": "jane",
+        "raw_payload_ref": null,
+        "retrieval_method": "manual_entry"
+      },
+      "record_status": "VERIFIED STRUCTURE, PRICE ABSENT — this is a real listing observed 2026-11-13 on RISE Lorain's Jane menu (store 756): Pure Ohio Wellness 'Jokerz', Flower, Indica, 14.15g, THC 23.8%. It was OUT OF STOCK and no usable price was displayed (structured data showed 0 USD, which is not a price) — so list_price/effective_price are null. Kept in this file to demonstrate the rule: never publish 0 or invent a price.",
+      "source_listing": {
+        "source_brand": "Pure Ohio Wellness",
+        "source_description": null,
+        "source_name": "Jokerz [14.15g]",
+        "source_sku_id": "1717693",
+        "source_url": "https://www.iheartjane.com/embed/stores/756/products/1717693/pure-ohio-wellness-jokerz-14-15g?fromMenu=true"
+      }
+    },
+    {
+      "availability": {
+        "customer_segment": null,
+        "quantity": null,
+        "status": "unknown"
+      },
+      "canonical_product": {
+        "brand_normalized": "(as listed)",
+        "canonical_product_id": "prod_EXAMPLE_solons_preroll",
+        "category": "pre_roll",
+        "form": "infused pre-roll pack",
+        "potency": {
+          "potency_basis": "label_claim",
+          "thc_percent": 34.15
+        },
+        "product_name_normalized": "Blue Boi – Rosin Diamond Infused",
+        "strain": {
+          "name": "Blue Boi",
+          "type": "unknown"
+        }
+      },
+      "dispensary": {
+        "city": "Solon",
+        "license_id": "CCD000185-00",
+        "menu_url": "https://www.leafly.com/dispensary-info/verilife-solon-med-non-med/menu",
+        "name": "Verilife – Solon"
+      },
+      "freshness": {
+        "retrieved_at": "2026-04-05T00:00:00-04:00",
+        "source_updated_at": null,
+        "stale_after": "2026-04-06T00:00:00-04:00"
+      },
+      "offer_id": "off_EXAMPLE_STALE_verilife_solon_blueboi",
+      "package": {
+        "count": 2,
+        "weight_display_source": "[2x 0.5g]",
+        "weight_g": 1
+      },
+      "price": {
+        "currency": "USD",
+        "discount": null,
+        "effective_price": 30,
+        "list_price": 30,
+        "price_per_gram": null,
+        "tax_included": false
+      },
+      "provenance": {
+        "authorization_basis": "none",
+        "provider": "leafly",
+        "raw_payload_ref": null,
+        "retrieval_method": "manual_entry"
+      },
+      "record_status": "ILLUSTRATIVE ONLY + STALE — name ('Blue Boi – Rosin Diamond Infused [2x 0.5g]'), brand ROVE, THC 34.15%, and $30.00 were seen together in a Leafly crawl copy dated 2026-04-05. Included to exercise the schema (multi-pack weight, THC %, availability unknown). Do NOT publish as a current price.",
+      "source_listing": {
+        "source_brand": "ROVE",
+        "source_description": null,
+        "source_name": "Blue Boi – Rosin Diamond Infused [2x 0.5g]",
+        "source_sku_id": null,
+        "source_url": "https://www.leafly.com/dispensary-info/verilife-solon-med-non-med/menu"
+      }
+    }
+  ]
+}

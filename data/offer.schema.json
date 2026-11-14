@@ -1,0 +1,467 @@
+{
+  "$id": "https://budscout.example/schemas/offer.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Design notes: (1) An 'offer' is dispensary-specific; cross-store comparison joins offers on canonical_product_id. (2) Verbatim source fields (source_name, source_description) are stored unaltered alongside normalized fields — this preserves provenance and is the control point for the open Ohio legal question about third-party alteration of dispensary content. (3) THC is split into thc_percent and thc_mg_total/thc_mg_per_serving and the two must never be merged or converted into each other. (4) Prices are menu list prices before tax; discounts carry eligibility so a veteran-only price is never shown as the general price.",
+  "properties": {
+    "availability": {
+      "properties": {
+        "customer_segment": {
+          "description": "Some menus/SKUs are medical-only or priced per segment.",
+          "enum": [
+            "adult_use",
+            "medical",
+            "both",
+            "unknown",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "quantity": {
+          "description": "Only when the source states it (e.g. Jane 'Only 1 left'). Never estimate.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "in_stock",
+            "low_stock",
+            "out_of_stock",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "type": "object"
+    },
+    "canonical_product": {
+      "description": "The standardized product identity shared across dispensaries. Two offers are 'the same product' only if brand_normalized, product_name_normalized, category, form, and package weight all match.",
+      "properties": {
+        "brand_normalized": {
+          "description": "Canonical brand from BudScout's brand alias table (e.g. 'Pure Ohio Wellness'). Raw brand string kept in source_listing.",
+          "type": "string"
+        },
+        "canonical_product_id": {
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "flower",
+            "pre_roll",
+            "vape",
+            "concentrate",
+            "edible",
+            "beverage",
+            "tincture",
+            "topical",
+            "capsule_tablet",
+            "accessory",
+            "other"
+          ],
+          "type": "string"
+        },
+        "form": {
+          "description": "Sub-form, e.g. 'whole flower', 'ground flower', 'cartridge', 'gummy', 'live resin'. Free text in v1; controlled vocabulary later.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "potency": {
+          "properties": {
+            "cbd_mg_total": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "cbd_percent": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "potency_basis": {
+              "description": "Menus display label claims; Ohio flower THC varies by batch. Record the basis, never present as lab-verified by BudScout.",
+              "enum": [
+                "label_claim",
+                "lab_result",
+                "unknown",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "thc_mg_per_serving": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "thc_mg_total": {
+              "description": "Total THC mg per package — edibles, beverages, tinctures.",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "thc_percent": {
+              "description": "THC % by weight — flower, vapes, concentrates. Never populate from a mg value.",
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "product_name_normalized": {
+          "description": "Normalized name with weight/units stripped (weight lives in package). Registered product name is preserved verbatim in source_listing.source_name.",
+          "type": "string"
+        },
+        "strain": {
+          "properties": {
+            "name": {
+              "description": "Cultivar name as listed (e.g. 'Jokerz'). Do NOT republish effect descriptors ('relaxing', 'uplifted') as strain attributes — Ohio treats effect words as health/therapeutic claims (see report §5).",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "indica",
+                "sativa",
+                "hybrid",
+                "cbd_dominant",
+                "unknown",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "canonical_product_id",
+        "brand_normalized",
+        "product_name_normalized",
+        "category"
+      ],
+      "type": "object"
+    },
+    "dispensary": {
+      "description": "Join key to the BudScout Ohio dispensary dataset (~/workspace/budscout-ohio-dispensaries).",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "license_id": {
+          "description": "Ohio DCC license ID, e.g. CCD000065-00. Primary key; strip whitespace when matching.",
+          "pattern": "^CCD[0-9]{6}-[0-9]{2}$",
+          "type": "string"
+        },
+        "menu_url": {
+          "description": "Click-through target: the dispensary's own menu (never a BudScout checkout).",
+          "format": "uri",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "license_id",
+        "name",
+        "city"
+      ],
+      "type": "object"
+    },
+    "freshness": {
+      "properties": {
+        "retrieved_at": {
+          "description": "When BudScout last pulled this offer. Displayed to users as 'price checked …'.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "source_updated_at": {
+          "description": "Provider's own updated timestamp when supplied.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stale_after": {
+          "description": "Policy: hide or badge the price once past this time (recommended: retrieved_at + 24h for price display; sooner for availability).",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "retrieved_at"
+      ],
+      "type": "object"
+    },
+    "offer_id": {
+      "description": "BudScout internal ID, e.g. 'off_' + hash(dispensary license_id + source provider + source SKU). Stable across refreshes.",
+      "type": "string"
+    },
+    "package": {
+      "properties": {
+        "count": {
+          "description": "Units in package where relevant (e.g. 2 pre-rolls, 10 gummies). Part of product identity: a 2-pack is not the same product as a 1-pack.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "weight_display_source": {
+          "description": "Weight exactly as the source displayed it, e.g. '1/8 oz' or '14.15g'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "weight_g": {
+          "description": "Canonical net weight in grams. Ohio flower units are gram-based: 2.83 g (= 1/10 oz), 5.66 g, 14.15 g, 28.3 g. Convert fractional-ounce displays to these gram values; keep the source display string in source_listing.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "weight_g"
+      ],
+      "type": "object"
+    },
+    "price": {
+      "properties": {
+        "currency": {
+          "const": "USD",
+          "type": "string"
+        },
+        "discount": {
+          "properties": {
+            "description_source": {
+              "description": "Discount wording verbatim from source.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "eligibility": {
+              "description": "Ohio discount rules (OAC 1301:18-8-11 + DCC discount guidance) impose tier parity; eligibility must travel with the price so comparisons stay honest.",
+              "enum": [
+                "all_customers",
+                "medical_patients",
+                "veterans",
+                "indigent_patients",
+                "first_time_customers",
+                "loyalty_members",
+                "unknown",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ends_at": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "percent_off": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "sale_price": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "starts_at": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "enum": [
+                "menu_sale",
+                "daily_deal",
+                "bundle",
+                "first_time",
+                "veteran",
+                "indigent_medical",
+                "loyalty",
+                "other",
+                null
+              ],
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "effective_price": {
+          "description": "Price a general customer pays now: sale price if a discount applies to everyone, otherwise list_price. Restricted-eligibility discounts (veteran, indigent, first-time, loyalty) must NOT lower effective_price; record them under discount with eligibility set. Null when no usable price was displayed (e.g. out of stock) - never 0, never invented.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "list_price": {
+          "description": "Regular menu price for this variant, before tax. Null when no usable price was displayed (e.g. out of stock) - never 0, never invented.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "price_per_gram": {
+          "description": "effective_price / weight_g, computed only when category is flower AND form is comparable (never compare whole flower $/g to ground/shake $/g, never across categories, never for edibles/vapes — use $/100mg THC there if anything, labeled as such). Null when not meaningful.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "tax_included": {
+          "const": false,
+          "description": "Menu prices are pre-tax. UI must say so; tax treatment differs for medical patients vs adult-use consumers.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "currency",
+        "list_price",
+        "effective_price"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "properties": {
+        "authorization_basis": {
+          "description": "There is no 'public webpage' value: visible != licensed. Offers with basis 'none' must not be published.",
+          "enum": [
+            "retailer_consent_form",
+            "platform_partnership",
+            "retailer_agency_agreement",
+            "b2b_license_with_republication",
+            "none"
+          ],
+          "type": "string"
+        },
+        "provider": {
+          "description": "Menu platform, e.g. 'jane', 'dutchie', 'sweed', 'weedmaps', 'retailer_direct'.",
+          "type": "string"
+        },
+        "raw_payload_ref": {
+          "description": "Pointer/hash of the stored raw response for audit and diffing.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retrieval_method": {
+          "enum": [
+            "partner_api",
+            "retailer_issued_api_key",
+            "retailer_file_feed",
+            "b2b_data_license",
+            "manual_entry"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "retrieval_method",
+        "authorization_basis"
+      ],
+      "type": "object"
+    },
+    "source_listing": {
+      "description": "The listing exactly as the source published it — the audit and compliance layer.",
+      "properties": {
+        "source_brand": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_description": {
+          "description": "Verbatim description. Must pass the effect/health-claim screen before any public display (see report §5).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_name": {
+          "description": "Product name verbatim, e.g. 'Jokerz [14.15g]'.",
+          "type": "string"
+        },
+        "source_sku_id": {
+          "description": "Provider's own product/variant ID at this store, when the authorized feed exposes one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_url": {
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_name",
+        "source_url"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "offer_id",
+    "dispensary",
+    "canonical_product",
+    "source_listing",
+    "package",
+    "price",
+    "availability",
+    "provenance",
+    "freshness"
+  ],
+  "title": "BudScout Offer — one dispensary's listing of one product variant, normalized for price comparison",
+  "type": "object"
+}
