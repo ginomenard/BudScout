@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateOffer, canPublishOffer } from '../lib/offer-safety.js';
+import { validateOffer, canPublishOffer } from '../lib/offer-safety.mjs';
 
 const now = new Date('2026-11-14T18:00:00Z');
 const offer = () => ({
