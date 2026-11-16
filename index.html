@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>BudScout</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoT4B8W2B1mF9g=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
 <style>
 
@@ -117,7 +117,7 @@ body{background:radial-gradient(ellipse at top,#123321,#0b1710 55%);padding-bott
 h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 .panel,.item{background:#11281b;border-color:#35533d}
 #map .bud-store-pin{background:transparent;border:0}
-#map .bud-store-pin svg{width:38px;height:48px;overflow:visible;filter:drop-shadow(0 3px 4px #0009)}
+#map .bud-store-pin svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 4px #0009)}
 #map .bud-pin-body{fill:#10291b;stroke:#a6f54d;stroke-width:3}
 #map .bud-pin-leaf{fill:#a6f54d}
 #map .bud-store-pin.bud-pin-selected svg{filter:drop-shadow(0 0 9px #a6f54d)}
@@ -207,7 +207,6 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 <div id="list"></div>
 
 </section><section id="budMap" class="bud-page" hidden><h2>Explore dispensaries</h2><section id="locationTools" class="panel hidden" aria-label="Map location controls"><form id="locationForm"><label for="locationQuery">Find a location in Ohio</label><input id="locationQuery" type="search" placeholder="City, ZIP, or street address" maxlength="160" autocomplete="street-address"><button type="submit">Search location</button><button id="useLocation" type="button" class="off">⌖ Use my location</button><button id="resetOhio" type="button" class="off">Reset to Ohio</button></form><p id="locationFeedback" class="small" role="status" aria-live="polite">Location is optional. Your position is not stored.</p></section>
-<section id="candidateLocations" class="panel hidden" aria-label="Ohio state-listed dispensary address lookup"><strong>Explore four Ohio state-listed dispensary addresses</strong><p class="small">Addresses appear on Ohio Division of Cannabis Control’s certificate-of-operation list. Tap a store to search its address and place a temporary location marker. This is an address search result, not a verified licensed-store pin; location accuracy depends on the map search service.</p><div id="candidateLocationButtons" class="chips"></div></section>
 <section id="radiusTools" class="panel hidden"><label for="radiusMiles"><strong>Verified store search radius</strong></label><select id="radiusMiles"><option value="all">All Ohio</option><option value="5">5 miles</option><option value="10">10 miles</option><option value="25">25 miles</option><option value="50">50 miles</option></select><p id="radiusFeedback" class="small" role="status">Choose a city, address, or your location before selecting a radius.</p></section>
 <div id="map" class="hidden" aria-label="Interactive Ohio street map; reviewed dispensary pins appear when available"></div>
 <section id="reviewedLocations" class="panel hidden" aria-label="Reviewed Ohio dispensary locations">
@@ -264,13 +263,11 @@ function showMapPoint(lat,lon,label,zoom=12){
  searchCenter=[lat,lon];updateRadiusResults();
  if(locationMarker)ohioMap.removeLayer(locationMarker);
  locationMarker=L.circleMarker([lat,lon],{radius:9,color:"#102017",fillColor:"#a6ed75",fillOpacity:1,weight:2}).addTo(ohioMap);
- const match=dccCandidates.find(candidate=>candidate.address===document.getElementById("locationQuery").value.trim());
- const addressText=match?match.address:label;
  const card=document.createElement("div");card.className="bud-location-card";
- const heading=document.createElement("strong");heading.textContent=match?match.name:"Searched location";
- const address=document.createElement("p");address.textContent=addressText;
+ const heading=document.createElement("strong");heading.textContent="Searched location";
+ const address=document.createElement("p");address.textContent=label;
  card.append(heading,address);
- addDirectionsChoices(card,addressText);
+ addDirectionsChoices(card,label);
  locationMarker.bindPopup(card,{maxWidth:260,autoPan:true,closeButton:true}).openPopup();
 }
 function locationFeedback(message){document.getElementById("locationFeedback").textContent=message;}
@@ -285,6 +282,14 @@ function initOhioMap(){
  }
  if(typeof L==="undefined"){document.getElementById("mapStatus").textContent="Map unavailable: check your connection and reload.";return;}
  ohioMap=L.map("map",{scrollWheelZoom:false,tap:false}).setView(ohioCenter,7);
+ ohioMap.on("zoomend",()=>{
+  const icon=storeIconForZoom(ohioMap.getZoom());
+  storeMarkersByLicense.forEach(marker=>{
+   marker.setIcon(icon);
+   marker.getElement()?.classList.toggle("bud-pin-selected",marker.isPopupOpen());
+   if(marker.isPopupOpen())marker.getPopup().update();
+  });
+ });
  // Watch for layout changes after the List/Map tab becomes visible.
  if(typeof ResizeObserver!=="undefined"){
   mapResizeObserver=new ResizeObserver(()=>refreshMapSize());
@@ -339,12 +344,18 @@ function renderReviewedStoreList(){
   container.appendChild(button);
  });
 }
-const budStoreIcon=L.divIcon({className:"bud-store-pin",iconSize:[38,48],iconAnchor:[19,46],popupAnchor:[0,-42],html:'<svg viewBox="0 0 38 48" aria-hidden="true"><path class="bud-pin-body" d="M19 2C9 2 3 9 3 19c0 13 16 26 16 26s16-13 16-26C35 9 29 2 19 2z"/><path class="bud-pin-leaf" d="M19 9c-3 5-3 8-3 11-2-3-5-5-8-6 0 6 3 9 7 10l-5 2 7 1v5h3v-5l8-1-6-2c5-2 7-5 8-10-4 1-7 3-9 6 0-4 0-7-2-11z"/></svg>'});
+const budStorePinSvg='<svg viewBox="0 0 38 48" aria-hidden="true"><path class="bud-pin-body" d="M19 2C9 2 3 9 3 19c0 13 16 26 16 26s16-13 16-26C35 9 29 2 19 2z"/><path class="bud-pin-leaf" d="M19 9c-3 5-3 8-3 11-2-3-5-5-8-6 0 6 3 9 7 10l-5 2 7 1v5h3v-5l8-1-6-2c5-2 7-5 8-10-4 1-7 3-9 6 0-4 0-7-2-11z"/></svg>';
+function storeIconForZoom(zoom){
+ const height=zoom<=7?10:zoom<=9?18:zoom<=11?30:48;
+ const width=Math.round(height*38/48);
+ return L.divIcon({className:"bud-store-pin",iconSize:[width,height],iconAnchor:[width/2,Math.round(height*46/48)],popupAnchor:[0,-Math.round(height*42/48)],html:budStorePinSvg});
+}
 function renderVerifiedStoreMarkers(){
  if(!ohioMap)return;
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
  else storeMarkerLayer.clearLayers();
  storeMarkersByLicense.clear();
+ const icon=storeIconForZoom(ohioMap.getZoom());
  displayedDispensaries.forEach(store=>{
   const addressText=[store.address,store.city,"OH "+store.zip].join(", ");
   const popup=document.createElement("div");
@@ -353,7 +364,7 @@ function renderVerifiedStoreMarkers(){
   popup.className="bud-location-card";
   popup.append(title,address);
   addDirectionsChoices(popup,addressText);
-  const marker=L.marker([store.latitude,store.longitude],{icon:budStoreIcon,title:store.name,alt:store.name+" dispensary"}).addTo(storeMarkerLayer).bindPopup(popup);
+  const marker=L.marker([store.latitude,store.longitude],{icon,title:store.name,alt:store.name+" dispensary"}).addTo(storeMarkerLayer).bindPopup(popup);
   marker.on("popupopen",()=>marker.getElement()?.classList.add("bud-pin-selected"));
   marker.on("popupclose",()=>marker.getElement()?.classList.remove("bud-pin-selected"));
   storeMarkersByLicense.set(store.license_id,marker);
@@ -386,24 +397,6 @@ async function loadVerifiedDispensaries(){
   document.getElementById("directoryFreshness").textContent="Directory unavailable; no review date can be confirmed.";
  }
 }
-
-// DCC certificate-of-operation address lookup candidates; not published directory records.
-const dccCandidates=[
- {name:"Greenleaf Apothecaries — Solon",address:"33113 Aurora Rd, Solon, OH 44139"},
- {name:"Amplify — Bedford",address:"22803 Rockside Rd, Bedford, OH 44146"},
- {name:"Amplify — Cleveland Heights",address:"1782 Coventry Rd, Cleveland Heights, OH 44118"},
- {name:"AYR Dispensary — Streetsboro",address:"9800 State Route 14, Streetsboro, OH 44241"}
-];
-const candidateButtons=document.getElementById("candidateLocationButtons");
-dccCandidates.forEach(candidate=>{
- const button=document.createElement("button");button.type="button";button.className="off";button.textContent="⌖ "+candidate.name;
- button.addEventListener("click",()=>{
-  const field=document.getElementById("locationQuery");field.value=candidate.address;
-  const form=document.getElementById("locationForm");
-  form.requestSubmit(form.querySelector('button[type="submit"]'));
- });
- candidateButtons.appendChild(button);
-});
 
 const products=[
 
@@ -469,7 +462,6 @@ list.classList.toggle("hidden",view!=="list");
 map.classList.toggle("hidden",view!=="map");
 document.getElementById("mapStatus").classList.toggle("hidden",view!=="map");
 document.getElementById("locationTools").classList.toggle("hidden",view!=="map");
-document.getElementById("candidateLocations").classList.toggle("hidden",view!=="map");
 document.getElementById("radiusTools").classList.toggle("hidden",view!=="map");
 document.getElementById("reviewedLocations").classList.toggle("hidden",view!=="map");
 if(view==="map"){initOhioMap();refreshMapSize();setTimeout(refreshMapSize,150);}
@@ -488,7 +480,7 @@ document.getElementById("clearBtn").onclick=()=>{search.value="";size.value="all
 
 sort.addEventListener("change",render);
 size.addEventListener("change",render);
-document.querySelectorAll("[data-query]").forEach(b=>b.addEventListener("click",()=>{search.value=b.dataset.query;render();search.focus()}));
+document.querySelectorAll("[data-query]").forEach(b=>b.addEventListener("click",()=>{search.value=b.dataset.query;if(document.activeElement===search)search.blur();render()}));
 document.getElementById("resetCompare").onclick=()=>{selected.clear();render()};
 
 document.getElementById("listBtn").onclick=()=>{view="list";render()};
