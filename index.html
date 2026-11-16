@@ -128,6 +128,22 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 .bud-bottom-nav svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .bud-page[hidden]{display:none!important}
 @media(min-width:800px){.bud-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(750px,100%);border:1px solid #375640;border-radius:18px 18px 0 0}}
+
+/* Partner-readiness homepage: responsive, no new external assets. */
+.bud-hero{padding:clamp(22px,5vw,42px);margin:18px 0 22px;border:1px solid #477a4b;border-radius:22px;background:linear-gradient(145deg,#1a4027,#10251a 68%);box-shadow:0 14px 34px #0004}
+.bud-eyebrow{margin:0 0 16px;color:#b9f48d;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.13em}
+.bud-hero h2{font-size:clamp(32px,6vw,49px);line-height:1.1;letter-spacing:-1.4px;margin:0 0 18px;color:#f5fff3}
+.bud-hero h2 span{color:#a6f54d}
+.bud-hero-copy{font-size:16px;color:#e0ebdf;max-width:56ch}
+.bud-hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 16px}
+.bud-hero-actions button{margin:0;min-height:48px}
+.bud-hero-actions button.off{border:1px solid #85b98a}
+.bud-hero-note{font-size:12px;color:#c6d5c7;margin:18px 0 0;max-width:66ch}
+.bud-home-features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bud-home-features .panel{margin:0}
+.bud-home-features h3{margin:0 0 8px;color:#b9f48d;font-size:17px}
+.bud-home-features p{font-size:13px;margin:0}
+@media(max-width:620px){.bud-home-features{grid-template-columns:1fr}.bud-hero-actions{flex-direction:column}.bud-hero-actions button{width:100%}}
 </style>
 
 </head>
@@ -138,7 +154,23 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 
 <h1><span style="color:#a6f54d">✦</span> BudScout</h1>
 
-<section id="budHome" class="bud-page"><h2>Find the product.<br>Compare the price.</h2><p>Explore Ohio dispensaries and compare products as verified pricing becomes available.</p></section><section id="budProducts" class="bud-page" hidden><h2>Compare products</h2>
+<section id="budHome" class="bud-page" aria-labelledby="budHomeTitle">
+  <div class="bud-hero">
+    <p class="bud-eyebrow">Ohio dispensary discovery · Early preview</p>
+    <h2 id="budHomeTitle">Discover Ohio dispensaries.<br><span>Explore with confidence.</span></h2>
+    <p class="bud-hero-copy">Find dispensary locations on an interactive Ohio map, search by city or address, and get directions. Product comparison is currently an illustrative demo—not live retailer pricing or inventory.</p>
+    <div class="bud-hero-actions">
+      <button type="button" data-home-destination="map">Explore dispensaries</button>
+      <button type="button" class="off" data-home-destination="products">Compare demo products</button>
+    </div>
+    <p class="bud-hero-note">Directory records are based on a dated state GIS snapshot; always confirm current licensing and hours with the Ohio Division of Cannabis Control or retailer. No live menu feeds or retailer partnerships are represented.</p>
+  </div>
+  <div class="bud-home-features" aria-label="What you can do in BudScout">
+    <article class="panel"><h3>Find stores</h3><p>Explore Ohio dispensary locations, use radius search, and open directions.</p></article>
+    <article class="panel"><h3>Understand the data</h3><p>Check directory source and review information before visiting.</p></article>
+    <article class="panel"><h3>Preview comparisons</h3><p>Try sample products and prices clearly labeled as fictional demos.</p></article>
+  </div>
+</section><section id="budProducts" class="bud-page" hidden><h2>Compare products</h2>
 
 <p>Search by strain, brand, or dispensary. Demo listings only.</p>
 
@@ -512,6 +544,7 @@ function showBudPage(page){
  if(page==="map")setTimeout(refreshMapSize,100);
 }
 document.querySelectorAll("[data-bud-page]").forEach(button=>button.addEventListener("click",()=>showBudPage(button.dataset.budPage)));
+document.querySelectorAll("[data-home-destination]").forEach(button=>button.addEventListener("click",()=>showBudPage(button.dataset.homeDestination)));
 showBudPage("home");
 loadVerifiedDispensaries();
 
