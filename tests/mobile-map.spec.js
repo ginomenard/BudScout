@@ -32,6 +32,17 @@ test('Ohio map fills its container and remains usable after drag and view switch
   await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
 });
 
+test('quick searches update results without focusing the text box', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('[data-bud-page="products"]').click();
+  const search = page.getByLabel('Search products');
+  for (const query of ['Blue Dream', 'Gelato', 'Summit']) {
+    await page.getByRole('button', { name: query, exact: true }).tap();
+    await expect(search).toHaveValue(query);
+    await expect(search).not.toBeFocused();
+  }
+});
+
 test('demo product comparison still works', async ({ page }) => {
   await page.goto('/');
   await page.locator('[data-bud-page="products"]').click();
@@ -92,6 +103,7 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await page.locator('[data-bud-page="map"]').click();
   await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(1);
   await expect(page.locator('#map .bud-store-pin svg')).toHaveCount(1);
+  await expect(page.locator('#map .bud-store-pin')).toHaveCSS('height', '10px');
   await page.locator('#map .leaflet-marker-icon').click();
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
   const popup = page.locator('.leaflet-popup-content');
@@ -108,6 +120,7 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await expect(storeButton).toBeVisible();
   await storeButton.click();
   await expect.poll(() => page.evaluate(() => ohioMap.getZoom())).toBe(14);
+  await expect(page.locator('#map .bud-store-pin')).toHaveCSS('height', '48px');
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
 });
 
