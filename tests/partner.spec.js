@@ -7,8 +7,8 @@ test('partner information is discoverable and does not imply existing partnershi
   await expect(page.getByRole('heading', { name: 'Partner With BudScout' })).toBeVisible();
   await expect(page.locator('main')).toContainText('No retailer partnerships');
   await expect(page.locator('main')).toContainText('fictional demonstration data');
-  await expect(page.locator('main')).toContainText('requires a GitHub account');
-  const contact = page.getByRole('link', { name: 'Open a public partnership inquiry' });
+  await expect(page.locator('main')).toContainText('No GitHub account is needed');
+  const contact = page.getByRole('link', { name: 'Email BudScout Partnerships' });
   await expect(contact).toHaveAttribute('href', /github\.com\/ginomenard\/BudScout\/issues\/new/);
   await expect(page.getByRole('link', { name: /fictional business dashboard concept/ })).toHaveAttribute('href', './partner-demo.html');
 });
@@ -16,7 +16,7 @@ test('partner information is discoverable and does not imply existing partnershi
 test('partner contact and back navigation fit narrow mobile screens', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/partner.html');
-  const cta = page.getByRole('link', { name: 'Open a public partnership inquiry' });
+  const cta = page.getByRole('link', { name: 'Email BudScout Partnerships' });
   await expect(cta).toBeVisible();
   const viewport = await page.evaluate(() => document.documentElement.clientWidth);
   const box = await cta.boundingBox();
