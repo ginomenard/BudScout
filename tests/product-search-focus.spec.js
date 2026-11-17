@@ -32,7 +32,8 @@ test('Clear filters resets state without focusing search or scrolling to it', as
   await clear.click();
   await expect(search).toHaveValue('');
   await expect(page.locator('#size')).toHaveValue('all');
-  await expect(clear).toBeHidden();
+  await expect(clear).toBeDisabled();
+  await expect(clear).toBeVisible();
   expect(await search.evaluate(el => document.activeElement === el)).toBe(false);
   const after = await page.evaluate(() => window.scrollY);
   expect(Math.abs(after - before)).toBeLessThanOrEqual(2);
@@ -40,4 +41,14 @@ test('Clear filters resets state without focusing search or scrolling to it', as
   // Deliberately tapping the input still focuses it for text entry.
   await search.click();
   expect(await search.evaluate(el => document.activeElement === el)).toBe(true);
+});
+
+
+test('partner contact opens private email rather than a public GitHub issue', async ({ page }) => {
+  await page.goto('/partner.html');
+  await expect(page.getByRole('heading', { name: 'Partner With BudScout' })).toBeVisible();
+  const inquiry = page.getByRole('link', { name: 'Email BudScout Partnerships' });
+  await expect(inquiry).toHaveAttribute('href', 'mailto:budscout.partners@gmail.com?subject=BudScout%20Retailer%20Partnership%20Inquiry');
+  await expect(page.getByRole('link', { name: 'budscout.partners@gmail.com' })).toHaveAttribute('href', 'mailto:budscout.partners@gmail.com');
+  await expect(page.locator('a[href*="github.com/ginomenard/BudScout/issues/new"]')).toHaveCount(0);
 });
