@@ -477,7 +477,7 @@ document.getElementById("mapBtn").setAttribute("aria-pressed",String(view==="map
 
 search.addEventListener("input",render);
 
-document.getElementById("clearBtn").onclick=()=>{search.value="";size.value="all";render();search.focus()};
+document.getElementById("clearBtn").onclick=()=>{if(document.activeElement===search)search.blur();search.value="";size.value="all";render()};
 
 sort.addEventListener("change",render);
 size.addEventListener("change",render);
