@@ -195,7 +195,7 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 
 <div class="chips" aria-label="Quick searches"><button type="button" class="off" data-query="Blue Dream">Blue Dream</button><button type="button" class="off" data-query="Gelato">Gelato</button><button type="button" class="off" data-query="Summit">Summit</button></div>
 
-<button type="button" id="clearBtn" class="off" hidden>Clear filters</button>
+<button type="button" id="clearBtn" class="off" disabled>Clear filters</button>
 
 </div>
 
@@ -444,7 +444,7 @@ function render(){
 
 let q=search.value.toLowerCase().trim();
 
-document.getElementById("clearBtn").hidden=q.length===0&&size.value==="all";
+document.getElementById("clearBtn").disabled=q.length===0&&size.value==="all";
 
 let items=products.map((p,index)=>({...p,index})).filter(p=>(p.strain+" "+p.brand+" "+p.store).toLowerCase().includes(q)&&(size.value==="all"||String(p.grams)===size.value));
 
@@ -477,7 +477,7 @@ document.getElementById("mapBtn").setAttribute("aria-pressed",String(view==="map
 
 search.addEventListener("input",render);
 
-document.getElementById("clearBtn").onclick=()=>{if(document.activeElement===search)search.blur();search.value="";size.value="all";render()};
+document.getElementById("clearBtn").onclick=()=>{if(document.activeElement===search)search.blur();const previousScrollY=window.scrollY;search.value="";size.value="all";render();window.scrollTo(0,previousScrollY)};
 
 sort.addEventListener("change",render);
 size.addEventListener("change",render);
