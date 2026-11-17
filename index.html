@@ -50,6 +50,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .map-note{padding:10px;font-size:13px;color:#a9b9aa}
 @media(max-width:480px){.controls{grid-template-columns:1fr}main{padding:18px 14px}.pin{padding:7px;font-size:11px}}
 
+.demo-tag{display:inline-block;font-size:10px;letter-spacing:.06em;padding:3px 6px;margin-left:4px;border:1px solid #a6ed75;border-radius:5px;color:#d9f5c4;vertical-align:middle}.demo-price-label{font-size:12px;font-weight:normal;color:#d9f5c4}#compareResults caption{caption-side:top;text-align:left;padding:8px 0;color:#d9f5c4;font-weight:bold}
 .price{color:#a6ed75;font-size:23px;font-weight:bold}
 
 .small{font-size:13px;color:#a9b9aa}
@@ -173,7 +174,7 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
   <p class="bud-hero-note">Operate an Ohio dispensary? <a href="./partner.html" style="color:#a6f54d">Explore a potential BudScout pilot</a>.</p>
 </section><section id="budProducts" class="bud-page" hidden><h2>Compare products</h2>
 
-<p>Search by strain, brand, or dispensary. Demo listings only.</p>
+<p>Search by strain, brand, or dispensary. <strong>Fictional product demo:</strong> all stores, products and prices in this section are illustrative and are not live offers from Ohio dispensaries.</p>
 
 <div class="panel">
 
@@ -218,7 +219,7 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
  <p class="small">Official map is maintained by Ohio DCC. BudScout's sample products and prices are not linked to licensed stores.</p>
 </section>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
-<div id="directoryProvenance" class="panel" aria-label="Dispensary data source and freshness"><strong>Where do these locations come from?</strong><p id="directoryFreshness" class="small" role="status">Loading directory source and review date…</p><p class="small">These are state GIS directory records, not a live license-status check. Operating status, address, and hours may change. Confirm with the <a href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer" style="color:#a6ed75">Ohio DCC official map</a> before visiting. Sample product listings are fictional.</p></div></section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><div id="compareResults"></div></div>
+<div id="directoryProvenance" class="panel" aria-label="Dispensary data source and freshness"><strong>Where do these locations come from?</strong><p id="directoryFreshness" class="small" role="status">Loading directory source and review date…</p><p class="small">These are state GIS directory records, not a live license-status check. Operating status, address, and hours may change. Confirm with the <a href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer" style="color:#a6ed75">Ohio DCC official map</a> before visiting. Sample product listings are fictional.</p></div></section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><p class="small" id="compareDisclosure">DEMO ONLY — compared stores and prices are fictional examples, not verified offers, live inventory, or purchasing options.</p><div id="compareResults"></div></div>
 
 <p class="small">Product listings and prices are fictional examples. Only separately reviewed, operational dispensaries may appear as map pins; inventory is not verified. Map tiles © OpenStreetMap contributors. No ordering.</p>
 
@@ -437,7 +438,7 @@ const panel=document.getElementById("comparePanel");
 const chosen=[...selected].map(i=>products[i]);
 panel.classList.toggle("hidden",!chosen.length);
 document.getElementById("compareCount").textContent="("+chosen.length+"/3)";
-document.getElementById("compareResults").innerHTML="<table><thead><tr><th>Product</th><th>Store</th><th>Size</th><th>Total</th><th>Price/g</th></tr></thead><tbody>"+chosen.map(p=>"<tr><td>"+p.strain+"</td><td>"+p.store+"</td><td>"+p.grams+"g</td><td>"+money(p.price)+"</td><td>"+money(p.price/p.grams)+"</td></tr>").join("")+"</tbody></table>";
+document.getElementById("compareResults").innerHTML="<table><caption>Fictional demo comparison — illustrative prices only</caption><thead><tr><th>Sample product</th><th>Fictional store</th><th>Size</th><th>Demo total</th><th>Demo price/g</th></tr></thead><tbody>"+chosen.map(p=>"<tr><td>"+p.strain+"</td><td>"+p.store+"</td><td>"+p.grams+"g</td><td>"+money(p.price)+"</td><td>"+money(p.price/p.grams)+"</td></tr>").join("")+"</tbody></table>";
 }
 
 function render(){
@@ -452,7 +453,7 @@ items.sort((a,b)=>sort.value==="high"?b.price/b.grams-a.price/a.grams:sort.value
 
 document.getElementById("count").textContent=items.length+" of "+products.length+" sample listings";
 
-list.innerHTML=items.map(p=>'<article class="item"><div class="meta"><strong>'+p.strain+'</strong><label class="compare"><input type="checkbox" data-compare="'+p.index+'" '+(selected.has(p.index)?'checked':'')+' '+(!selected.has(p.index)&&selected.size>=3?'disabled':'')+'> Compare</label></div><p>'+p.brand+' · '+p.store+' · '+p.grams+'g</p><div class="price">'+money(p.price/p.grams)+'/g</div><span class="small">'+money(p.price)+' total</span></article>').join("")||"<p>No matching products. Try clearing filters.</p>";
+list.innerHTML=items.map(p=>'<article class="item"><div class="meta"><strong>'+p.strain+' <span class="demo-tag">FICTIONAL DEMO</span></strong><label class="compare"><input type="checkbox" data-compare="'+p.index+'" '+(selected.has(p.index)?'checked':'')+' '+(!selected.has(p.index)&&selected.size>=3?'disabled':'')+'> Compare</label></div><p>'+p.brand+' · '+p.store+' · '+p.grams+'g</p><div class="price">'+money(p.price/p.grams)+'/g <span class="demo-price-label">illustrative</span></div><span class="small">Demo total: '+money(p.price)+' · Not a live offer</span></article>').join("")||"<p>No matching products. Try clearing filters.</p>";
 list.querySelectorAll("[data-compare]").forEach(el=>el.addEventListener("change",()=>toggleCompare(Number(el.dataset.compare))));
 renderCompare();
 
