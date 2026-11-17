@@ -9,7 +9,7 @@ test('partner information is discoverable and does not imply existing partnershi
   await expect(page.locator('main')).toContainText('fictional demonstration data');
   await expect(page.locator('main')).toContainText('No GitHub account is needed');
   const contact = page.getByRole('link', { name: 'Email BudScout Partnerships' });
-  await expect(contact).toHaveAttribute('href', /github\.com\/ginomenard\/BudScout\/issues\/new/);
+  await expect(contact).toHaveAttribute('href', 'mailto:budscout.partners@gmail.com?subject=BudScout%20Retailer%20Partnership%20Inquiry');
   await expect(page.getByRole('link', { name: /fictional business dashboard concept/ })).toHaveAttribute('href', './partner-demo.html');
 });
 
