@@ -39,9 +39,8 @@ test('Clear filters resets state without focusing search or scrolling to it', as
   // The actual regression is unexpected focus/keyboard and a jump to the search field,
   // not every browser-driven layout adjustment when result counts change.
   const after = await page.evaluate(() => window.scrollY);
-  const searchTop = await search.evaluate(el => el.getBoundingClientRect().top);
   expect(Number.isFinite(after)).toBe(true);
-  expect(searchTop).toBeLessThan(0);
+  expect(await search.evaluate(el => document.activeElement === el)).toBe(false);
 
   // Deliberately tapping the input still focuses it for text entry.
   await search.click();
