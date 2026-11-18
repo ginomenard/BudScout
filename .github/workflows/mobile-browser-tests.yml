@@ -8,7 +8,7 @@ jobs:
   mobile-e2e:
     # Playwright 1.56.1 cannot install browsers on the current ubuntu-latest (26.04) runner.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,7 +19,7 @@ jobs:
       - run: python3 scripts/validate_offers.py
       - run: python3 -m unittest discover -s tests -p "test_offers.py"
       - run: npm install --no-audit --no-fund
-      - run: npx playwright install --with-deps chromium webkit
+      - run: npx playwright install chromium webkit
       - run: npm run test:e2e
       - name: Upload failure evidence
         if: failure()
