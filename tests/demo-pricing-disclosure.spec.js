@@ -16,7 +16,8 @@ test('fictional demo labels appear on every product card and comparison', async 
   await expect(page.locator('#comparePanel')).toBeVisible();
   await expect(page.locator('#compareDisclosure')).toContainText('DEMO ONLY');
   await expect(page.locator('#compareResults caption')).toContainText('Fictional demo comparison');
-  await expect(page.locator('#compareResults th').last()).toHaveText('Demo price/g');
+  await expect(page.locator('#compareResults thead th').nth(4)).toHaveText('Demo price/g');
+  await expect(page.locator('#compareResults thead th').last()).toHaveText('Action');
 });
 
 test('filtered demo cards retain disclosures and real Ohio directory stays separate', async ({ page }) => {
