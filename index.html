@@ -438,7 +438,8 @@ const panel=document.getElementById("comparePanel");
 const chosen=[...selected].map(i=>products[i]);
 panel.classList.toggle("hidden",!chosen.length);
 document.getElementById("compareCount").textContent="("+chosen.length+"/3)";
-document.getElementById("compareResults").innerHTML="<table><caption>Fictional demo comparison — illustrative prices only</caption><thead><tr><th>Sample product</th><th>Fictional store</th><th>Size</th><th>Demo total</th><th>Demo price/g</th></tr></thead><tbody>"+chosen.map(p=>"<tr><td>"+p.strain+"</td><td>"+p.store+"</td><td>"+p.grams+"g</td><td>"+money(p.price)+"</td><td>"+money(p.price/p.grams)+"</td></tr>").join("")+"</tbody></table>";
+document.getElementById("compareResults").innerHTML="<table><caption>Fictional demo comparison — illustrative prices only</caption><thead><tr><th>Sample product</th><th>Fictional store</th><th>Size</th><th>Demo total</th><th>Demo price/g</th><th>Action</th></tr></thead><tbody>"+chosen.map(p=>"<tr><td>"+p.strain+"</td><td>"+p.store+"</td><td>"+p.grams+"g</td><td>"+money(p.price)+"</td><td>"+money(p.price/p.grams)+"</td><td><button type=\"button\" class=\"off\" data-remove-compare=\""+products.indexOf(p)+"\" aria-label=\"Remove "+p.strain+" from comparison\">Remove</button></td></tr>").join("")+"</tbody></table>";
+document.querySelectorAll("#compareResults [data-remove-compare]").forEach(button=>button.addEventListener("click",()=>toggleCompare(Number(button.dataset.removeCompare))));
 }
 
 function render(){
