@@ -6,8 +6,10 @@ permissions:
   contents: read
 jobs:
   mobile-e2e:
-    # Playwright 1.56.1 cannot install browsers on the current ubuntu-latest (26.04) runner.
+    # Preinstalled Playwright browsers and OS libraries avoid slow apt downloads.
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +21,6 @@ jobs:
       - run: python3 scripts/validate_offers.py
       - run: python3 -m unittest discover -s tests -p "test_offers.py"
       - run: npm install --no-audit --no-fund
-      - run: npx playwright install chromium webkit
       - run: npm run test:e2e
       - name: Upload failure evidence
         if: failure()
