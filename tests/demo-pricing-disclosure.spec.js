@@ -49,3 +49,27 @@ test('individual demo comparison can be removed without clearing other selection
   await page.locator('#compareResults [data-remove-compare]').click();
   await expect(page.locator('#comparePanel')).toBeHidden();
 });
+
+
+test('mobile Compare checkbox stays aligned and accessible when card title wraps', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/');
+  await page.locator('[data-bud-page="products"]').click();
+  const card = page.locator('#list .item').first();
+  const label = card.locator('label.compare');
+  const checkbox = label.locator('input[data-compare]');
+  await expect(label).toContainText('Compare');
+  await expect(checkbox).toBeVisible();
+  const bounds = await label.boundingBox();
+  const inputBounds = await checkbox.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(inputBounds).not.toBeNull();
+  expect(inputBounds.x).toBeGreaterThanOrEqual(bounds.x);
+  expect(inputBounds.x + inputBounds.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1);
+  expect(inputBounds.y + inputBounds.height / 2).toBeGreaterThan(bounds.y);
+  expect(inputBounds.y + inputBounds.height / 2).toBeLessThan(bounds.y + bounds.height);
+  expect(await label.evaluate(el => getComputedStyle(el).whiteSpace)).toBe('nowrap');
+  await label.click();
+  await expect(checkbox).toBeChecked();
+  await expect(page.locator('#comparePanel')).toBeVisible();
+});
