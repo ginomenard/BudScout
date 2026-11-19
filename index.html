@@ -145,6 +145,9 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 .bud-home-features h3{margin:0 0 8px;color:#b9f48d;font-size:17px}
 .bud-home-features p{font-size:13px;margin:0}
 @media(max-width:620px){.bud-home-features{grid-template-columns:1fr}.bud-hero-actions{flex-direction:column}.bud-hero-actions button{width:100%}}
+
+.bud-map-cluster{background:#a6ed75;border:3px solid #102017;border-radius:50%;box-shadow:0 1px 8px #0008;color:#102017;font:bold 14px Arial,sans-serif;text-align:center;line-height:32px}
+.bud-map-cluster span{display:block}
 </style>
 
 </head>
@@ -284,14 +287,7 @@ function initOhioMap(){
  }
  if(typeof L==="undefined"){document.getElementById("mapStatus").textContent="Map unavailable: check your connection and reload.";return;}
  ohioMap=L.map("map",{scrollWheelZoom:false,tap:false}).setView(ohioCenter,7);
- ohioMap.on("zoomend",()=>{
-  const icon=storeIconForZoom(ohioMap.getZoom());
-  storeMarkersByLicense.forEach(marker=>{
-   marker.setIcon(icon);
-   marker.getElement()?.classList.toggle("bud-pin-selected",marker.isPopupOpen());
-   if(marker.isPopupOpen())marker.getPopup().update();
-  });
- });
+ ohioMap.on("zoomend",()=>renderVerifiedStoreMarkers());
  // Watch for layout changes after the List/Map tab becomes visible.
  if(typeof ResizeObserver!=="undefined"){
   mapResizeObserver=new ResizeObserver(()=>refreshMapSize());
@@ -337,10 +333,10 @@ function renderReviewedStoreList(){
   button.append(name,detail);
   button.setAttribute("aria-label","Show "+store.name+" on map");
   button.addEventListener("click",()=>{
-   const marker=storeMarkersByLicense.get(store.license_id);
-   if(!ohioMap||!marker)return;
+   if(!ohioMap)return;
    ohioMap.setView([store.latitude,store.longitude],14);
-   marker.openPopup();
+   // zoomend rebuilds individual markers after leaving cluster mode.
+   storeMarkersByLicense.get(store.license_id)?.openPopup();
    document.getElementById("map").scrollIntoView({block:"nearest"});
   });
   container.appendChild(button);
@@ -352,13 +348,41 @@ function storeIconForZoom(zoom){
  const width=Math.round(height*38/48);
  return L.divIcon({className:"bud-store-pin",iconSize:[width,height],iconAnchor:[width/2,Math.round(height*46/48)],popupAnchor:[0,-Math.round(height*42/48)],html:budStorePinSvg});
 }
+// Group nearby pins in projected map pixels at broad zoom levels. No extra map service
+// or external clustering dependency is required; full individual pins return on zoom.
+function groupVisibleStores(stores,zoom){
+ if(zoom>=12)return stores.map(store=>[store]);
+ const cell=zoom<=7?72:zoom<=9?56:44;
+ const groups=new Map();
+ stores.forEach(store=>{
+  const point=ohioMap.project([store.latitude,store.longitude],zoom);
+  const key=Math.floor(point.x/cell)+":"+Math.floor(point.y/cell);
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(store);
+ });
+ return [...groups.values()];
+}
 function renderVerifiedStoreMarkers(){
  if(!ohioMap)return;
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
  else storeMarkerLayer.clearLayers();
  storeMarkersByLicense.clear();
- const icon=storeIconForZoom(ohioMap.getZoom());
- displayedDispensaries.forEach(store=>{
+ const zoom=ohioMap.getZoom(),icon=storeIconForZoom(zoom);
+ groupVisibleStores(displayedDispensaries,zoom).forEach(group=>{
+  if(group.length>1){
+   const lat=group.reduce((sum,store)=>sum+store.latitude,0)/group.length;
+   const lon=group.reduce((sum,store)=>sum+store.longitude,0)/group.length;
+   const count=group.length;
+   const clusterIcon=L.divIcon({className:"bud-map-cluster",html:'<span aria-hidden="true">'+count+'</span>',iconSize:[38,38],iconAnchor:[19,19]});
+   const marker=L.marker([lat,lon],{icon:clusterIcon,title:count+" reviewed dispensaries; zoom in to explore",alt:count+" dispensaries grouped"}).addTo(storeMarkerLayer);
+   marker.on("click",()=>{
+    const bounds=L.latLngBounds(group.map(store=>[store.latitude,store.longitude]));
+    ohioMap.fitBounds(bounds.pad(0.3),{maxZoom:Math.min(ohioMap.getZoom()+3,15)});
+    if(ohioMap.getZoom()===zoom)ohioMap.setZoom(Math.min(zoom+2,15));
+   });
+   return;
+  }
+  const store=group[0];
   const addressText=[store.address,store.city,"OH "+store.zip].join(", ");
   const popup=document.createElement("div");
   const title=document.createElement("strong");title.textContent=store.name;
