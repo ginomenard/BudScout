@@ -74,7 +74,11 @@ test('Ohio location search centers map without relying on live geocoding', async
   await page.locator('#resetOhio').click();
   await expect(page.locator('#locationFeedback')).toHaveText('Map reset to Ohio.');
   await expect.poll(() => page.evaluate(() => locationMarker === null)).toBe(true);
-  await expect(page.locator('#map .leaflet-marker-icon')).toHaveCount(232);
+  // Reset returns to clustered Ohio overview, not 232 individual marker elements.
+  await expect.poll(() => page.evaluate(() => ohioMap.getZoom())).toBe(7);
+  await expect(page.locator('#reviewedLocationList .store-jump')).toHaveCount(232);
+  await expect.poll(() => page.locator('#map .bud-map-cluster').count()).toBeGreaterThan(0);
+  expect(await page.locator('#map .leaflet-marker-icon').count()).toBeLessThan(232);
 });
 
 test('location search handles no Ohio matches without moving the map', async ({ page }) => {
@@ -121,6 +125,7 @@ test('reviewed operational dispensary renders a pin and safe directions link', a
   await storeButton.click();
   await expect.poll(() => page.evaluate(() => ohioMap.getZoom())).toBe(14);
   await expect(page.locator('#map .bud-store-pin')).toHaveCSS('height', '48px');
+  await expect(page.locator('.leaflet-popup-content')).toHaveCount(1);
   await expect(page.locator('.leaflet-popup-content')).toContainText('Fixture Reviewed Store');
 });
 
