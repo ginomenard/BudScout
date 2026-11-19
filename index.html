@@ -365,7 +365,12 @@ function groupVisibleStores(stores,zoom){
 function renderVerifiedStoreMarkers(){
  if(!ohioMap)return;
  if(!storeMarkerLayer)storeMarkerLayer=L.layerGroup().addTo(ohioMap);
- else storeMarkerLayer.clearLayers();
+ else {
+  // Close an open store popup before replacing its marker layer on zoom/filter changes.
+  // Otherwise Leaflet can leave a detached popup visible alongside the new one.
+  ohioMap.closePopup();
+  storeMarkerLayer.clearLayers();
+ }
  storeMarkersByLicense.clear();
  const zoom=ohioMap.getZoom(),icon=storeIconForZoom(zoom);
  groupVisibleStores(displayedDispensaries,zoom).forEach(group=>{
