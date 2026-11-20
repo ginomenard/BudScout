@@ -163,6 +163,38 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 #budCommunity label{display:block;margin-top:12px;font-weight:bold}
 #budCommunity .bud-local-warning{border-left:3px solid #a6ed75;padding-left:12px}
 @media(max-width:480px){.bud-community-tabs button{font-size:13px;padding:10px 7px}.bud-bottom-nav button{font-size:11px}}
+
+/* Floating navigation: inset rounded capsule, including on mobile Safari. */
+.bud-bottom-nav{
+ position:fixed;left:50%;right:auto;
+ bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+ transform:translateX(-50%);
+ width:min(720px,calc(100% - 28px));
+ padding:7px;
+ display:flex;align-items:stretch;justify-content:space-around;
+ border:1px solid #45634b;border-radius:24px;
+ background:rgba(9,28,18,.94);
+ box-shadow:0 10px 32px #0009,0 1px 0 #ffffff12 inset;
+ -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+ z-index:1100;
+}
+.bud-bottom-nav button{
+ flex:1 1 0;min-width:0;margin:0;padding:10px 2px;
+ border-radius:17px;min-height:55px;gap:4px;
+}
+.bud-bottom-nav button[aria-current=page]{
+ border-radius:17px;
+ background:#20452d!important;
+}
+@media(min-width:800px){
+ .bud-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(720px,calc(100% - 40px));border-radius:24px}
+}
+@media(max-width:390px){
+ .bud-bottom-nav{width:calc(100% - 20px);padding:5px}
+ .bud-bottom-nav button{font-size:10px;padding:9px 1px}
+ .bud-bottom-nav svg{width:21px;height:21px}
+}
+main{padding-bottom:calc(115px + env(safe-area-inset-bottom, 0px))}
 </style>
 
 </head>
