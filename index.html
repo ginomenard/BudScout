@@ -148,6 +148,21 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 
 .bud-map-cluster{background:#a6ed75;border:3px solid #102017;border-radius:50%;box-shadow:0 1px 8px #0008;color:#102017;font:bold 14px Arial,sans-serif;text-align:center;line-height:32px}
 .bud-map-cluster span{display:block}
+
+/* Community MVP: browser-local prototype, not a shared social network. */
+.bud-community-intro{background:#1b2d21;border:1px solid #39513e;border-radius:15px;padding:16px;margin:12px 0}
+.bud-community-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.bud-community-tabs button{flex:1;min-width:95px}
+.bud-community-card{background:#1b2d21;border:1px solid #39513e;border-radius:15px;padding:16px;margin:12px 0}
+.bud-community-card h3{margin:0 0 7px;color:#a6ed75}
+.bud-community-card p{margin:6px 0}
+.bud-community-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bud-community-actions button{font-size:14px}
+#budCommunity textarea{width:100%;min-height:90px;padding:12px;background:#102017;color:white;border:1px solid #537159;border-radius:10px;font:16px Arial,sans-serif}
+#budCommunity textarea:focus-visible{outline:3px solid #a6ed75;outline-offset:2px}
+#budCommunity label{display:block;margin-top:12px;font-weight:bold}
+#budCommunity .bud-local-warning{border-left:3px solid #a6ed75;padding-left:12px}
+@media(max-width:480px){.bud-community-tabs button{font-size:13px;padding:10px 7px}.bud-bottom-nav button{font-size:11px}}
 </style>
 
 </head>
@@ -222,7 +237,45 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
  <p class="small">Official map is maintained by Ohio DCC. BudScout's sample products and prices are not linked to licensed stores.</p>
 </section>
 <p id="mapStatus" class="map-note hidden" role="status">Ohio map preview. Verified dispensary locations are coming soon; fictional product listings are not plotted.</p>
-<div id="directoryProvenance" class="panel" aria-label="Dispensary data source and freshness"><strong>Where do these locations come from?</strong><p id="directoryFreshness" class="small" role="status">Loading directory source and review date…</p><p class="small">These are state GIS directory records, not a live license-status check. Operating status, address, and hours may change. Confirm with the <a href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer" style="color:#a6ed75">Ohio DCC official map</a> before visiting. Sample product listings are fictional.</p></div></section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><p class="small" id="compareDisclosure">DEMO ONLY — compared stores and prices are fictional examples, not verified offers, live inventory, or purchasing options.</p><div id="compareResults"></div></div>
+<div id="directoryProvenance" class="panel" aria-label="Dispensary data source and freshness"><strong>Where do these locations come from?</strong><p id="directoryFreshness" class="small" role="status">Loading directory source and review date…</p><p class="small">These are state GIS directory records, not a live license-status check. Operating status, address, and hours may change. Confirm with the <a href="https://com.ohio.gov/divisions-and-programs/cannabis-control/about-dcc/licenses/what-we-do/cannabis-dispensary-map" target="_blank" rel="noopener noreferrer" style="color:#a6ed75">Ohio DCC official map</a> before visiting. Sample product listings are fictional.</p></div></section>
+<section id="budCommunity" class="bud-page" hidden aria-labelledby="budCommunityTitle">
+<h2 id="budCommunityTitle">Community</h2>
+<div class="bud-community-intro">
+ <strong>Find your people, wherever you are.</strong>
+ <p>Discover local conversations, join communities, and start one for your city.</p>
+ <p class="small bud-local-warning"><strong>Preview only:</strong> communities and posts created here are saved only in this browser. Other people cannot see them. Public accounts, shared posts and moderation are not connected yet.</p>
+</div>
+<div class="bud-community-tabs" role="group" aria-label="Community feed filters">
+ <button type="button" data-community-feed="for-you" aria-pressed="true">For You</button>
+ <button type="button" data-community-feed="following" class="off" aria-pressed="false">Following</button>
+ <button type="button" data-community-feed="mine" class="off" aria-pressed="false">My Communities</button>
+</div>
+<div class="panel">
+ <label for="communitySearch">Find communities by city or name</label>
+ <input id="communitySearch" type="search" maxlength="100" placeholder="Search city or community">
+ <button type="button" id="communityCreateToggle">+ Create a community</button>
+</div>
+<form id="communityCreateForm" class="panel hidden" aria-label="Create a local community">
+ <h3>Create a community</h3>
+ <p class="small">Choose a general city or region, never a precise home address.</p>
+ <label for="communityName">Community name</label><input id="communityName" maxlength="60" required placeholder="e.g., Cleveland Scouts">
+ <label for="communityCity">City or region</label><input id="communityCity" maxlength="80" required placeholder="e.g., Cleveland, Ohio">
+ <label for="communityDescription">Description</label><textarea id="communityDescription" maxlength="300" required placeholder="What's this community about?"></textarea>
+ <label for="communityRules">Community rules</label><textarea id="communityRules" maxlength="500" required>Be respectful. No buying or selling cannabis. No medical claims or spam. Protect personal information.</textarea>
+ <label for="communityVisibility">Visibility</label><select id="communityVisibility"><option value="public">Public preview (saved locally only)</option></select>
+ <p class="small">Rules are required. In a future public launch, communities will also need reporting and moderation.</p>
+ <button type="submit">Create local community</button><button type="button" class="off" id="communityCreateCancel">Cancel</button>
+ <p id="communityCreateStatus" role="status" class="small"></p>
+</form>
+<div id="communityList" aria-live="polite"></div>
+<form id="communityPostForm" class="panel hidden" aria-label="Create a local community post">
+ <h3>Post to your community</h3>
+ <label for="communityPostTarget">Community</label><select id="communityPostTarget" required></select>
+ <label for="communityPostText">Your post</label><textarea id="communityPostText" maxlength="500" required placeholder="Ask a question or share a local tip"></textarea>
+ <button type="submit">Save post on this device</button><p id="communityPostStatus" role="status" class="small"></p>
+</form>
+<h3>Community feed</h3><div id="communityFeed" aria-live="polite"></div>
+</section><section id="budDeals" class="bud-page" hidden><h2>Deals</h2><div class="panel"><strong>Verified deals coming soon</strong><p>Live pricing feeds are not connected yet. We will show timestamps when deals are verified.</p></div></section><div id="comparePanel" class="panel hidden" aria-live="polite"><div class="meta"><strong>Compare selected listings <span id="compareCount"></span></strong><button id="resetCompare" type="button" class="off">Clear selection</button></div><p class="small" id="compareDisclosure">DEMO ONLY — compared stores and prices are fictional examples, not verified offers, live inventory, or purchasing options.</p><div id="compareResults"></div></div>
 
 <p class="small">Product listings and prices are fictional examples. Only separately reviewed, operational dispensaries may appear as map pins; inventory is not verified. Map tiles © OpenStreetMap contributors. No ordering.</p>
 
@@ -230,6 +283,7 @@ h1{letter-spacing:-.7px}h2{letter-spacing:-.6px}
 <button type="button" data-bud-page="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10h-6v-7H9v7H3z"/></svg>Home</button>
 <button type="button" data-bud-page="products"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg>Search</button>
 <button type="button" data-bud-page="map"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 9 3l6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></svg>Map</button>
+<button type="button" data-bud-page="community"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M14 16a5 5 0 0 1 8 4v1"/></svg>Community</button>
 <button type="button" data-bud-page="deals"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v18l-8-5-8 5z"/></svg>Deals</button>
 </nav></main>
 
@@ -561,7 +615,91 @@ document.getElementById("resetOhio").addEventListener("click",()=>{
 });
 window.addEventListener("resize",refreshMapSize);
 window.addEventListener("orientationchange",()=>setTimeout(refreshMapSize,200));
-const budPages={home:"budHome",products:"budProducts",map:"budMap",deals:"budDeals"};
+
+const communityStorageKey="budscout-community-preview-v1";
+let communityFeedMode="for-you";
+function loadCommunityState(){
+ try{
+  const parsed=JSON.parse(localStorage.getItem(communityStorageKey)||"{}");
+  return {communities:Array.isArray(parsed.communities)?parsed.communities:[],posts:Array.isArray(parsed.posts)?parsed.posts:[]};
+ }catch{return {communities:[],posts:[]};}
+}
+let communityState=loadCommunityState();
+function saveCommunityState(){
+ try{localStorage.setItem(communityStorageKey,JSON.stringify(communityState));return true;}
+ catch{return false;}
+}
+function communityNode(tag,textValue,className){
+ const node=document.createElement(tag);
+ if(textValue!==undefined)node.textContent=textValue;
+ if(className)node.className=className;
+ return node;
+}
+function renderCommunity(){
+ const list=document.getElementById("communityList");
+ const feed=document.getElementById("communityFeed");
+ const query=document.getElementById("communitySearch").value.trim().toLowerCase();
+ list.replaceChildren();feed.replaceChildren();
+ const visible=communityState.communities.filter(c=>
+  (communityFeedMode!=="mine"&&communityFeedMode!=="following"||c.joined)&&
+  (!query||(c.name+" "+c.city).toLowerCase().includes(query)));
+ if(!visible.length)list.appendChild(communityNode("p",communityFeedMode==="following"?"Follow communities by joining them to see their posts.":"No matching communities yet. Create one for your area.","small"));
+ visible.forEach(c=>{
+  const card=communityNode("article",undefined,"bud-community-card");
+  card.append(communityNode("h3",c.name),communityNode("p",c.city+" · Local browser preview","small"),communityNode("p",c.description));
+  const rules=communityNode("details");rules.append(communityNode("summary","Community rules"),communityNode("p",c.rules));card.append(rules);
+  const actions=communityNode("div",undefined,"bud-community-actions");
+  const join=communityNode("button",c.joined?"Leave community":"Join community",c.joined?"off":"");
+  join.type="button";join.addEventListener("click",()=>{c.joined=!c.joined;saveCommunityState();renderCommunity();});
+  actions.append(join);card.append(actions);list.append(card);
+ });
+ const joined=communityState.communities.filter(c=>c.joined);
+ const postForm=document.getElementById("communityPostForm");
+ postForm.classList.toggle("hidden",joined.length===0);
+ const target=document.getElementById("communityPostTarget");const previous=target.value;target.replaceChildren();
+ joined.forEach(c=>{const opt=communityNode("option",c.name);opt.value=c.id;target.append(opt);});
+ if(joined.some(c=>c.id===previous))target.value=previous;
+ const visibleIds=new Set(visible.map(c=>c.id));
+ const posts=communityState.posts.filter(p=>visibleIds.has(p.communityId));
+ if(!posts.length)feed.appendChild(communityNode("p","No posts yet. Join a community to start a conversation on this device.","small"));
+ posts.slice().reverse().forEach(p=>{
+  const c=communityState.communities.find(c=>c.id===p.communityId);
+  const card=communityNode("article",undefined,"bud-community-card");
+  card.append(communityNode("strong",c?c.name:"Community"),communityNode("p",p.text),communityNode("p","Saved locally · Not shared with others","small"));
+  feed.append(card);
+ });
+ document.querySelectorAll("[data-community-feed]").forEach(b=>{
+  const selected=b.dataset.communityFeed===communityFeedMode;
+  b.classList.toggle("off",!selected);b.setAttribute("aria-pressed",String(selected));
+ });
+}
+document.querySelectorAll("[data-community-feed]").forEach(b=>b.addEventListener("click",()=>{communityFeedMode=b.dataset.communityFeed;renderCommunity();}));
+document.getElementById("communitySearch").addEventListener("input",renderCommunity);
+document.getElementById("communityCreateToggle").addEventListener("click",()=>document.getElementById("communityCreateForm").classList.remove("hidden"));
+document.getElementById("communityCreateCancel").addEventListener("click",()=>document.getElementById("communityCreateForm").classList.add("hidden"));
+document.getElementById("communityCreateForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const name=document.getElementById("communityName").value.trim(),city=document.getElementById("communityCity").value.trim();
+ const description=document.getElementById("communityDescription").value.trim(),rules=document.getElementById("communityRules").value.trim();
+ const status=document.getElementById("communityCreateStatus");
+ if(!name||!city||!description||!rules){status.textContent="Please complete all fields, including community rules.";return;}
+ if(communityState.communities.some(c=>c.name.toLowerCase()===name.toLowerCase()&&c.city.toLowerCase()===city.toLowerCase())){status.textContent="A community with this name already exists in this city on this device.";return;}
+ const id="local-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);
+ communityState.communities.push({id,name,city,description,rules,joined:true});
+ status.textContent=saveCommunityState()?"Community created on this device.":"Community created for this session; browser storage is unavailable.";
+ e.target.reset();e.target.classList.add("hidden");communityFeedMode="mine";renderCommunity();
+});
+document.getElementById("communityPostForm").addEventListener("submit",e=>{
+ e.preventDefault();const communityId=document.getElementById("communityPostTarget").value;
+ const content=document.getElementById("communityPostText").value.trim();
+ if(!content||!communityState.communities.some(c=>c.id===communityId&&c.joined))return;
+ communityState.posts.push({communityId,text:content});
+ document.getElementById("communityPostStatus").textContent=saveCommunityState()?"Post saved on this device only.":"Post saved for this session only.";
+ document.getElementById("communityPostText").value="";renderCommunity();
+});
+renderCommunity();
+
+const budPages={home:"budHome",products:"budProducts",map:"budMap",community:"budCommunity",deals:"budDeals"};
 function showBudPage(page){
  if(!budPages[page])return;
  Object.entries(budPages).forEach(([key,id])=>document.getElementById(id).hidden=key!==page);
