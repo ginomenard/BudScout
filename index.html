@@ -715,6 +715,7 @@ document.getElementById("communityCreateForm").addEventListener("submit",e=>{
  const description=document.getElementById("communityDescription").value.trim(),rules=document.getElementById("communityRules").value.trim();
  const status=document.getElementById("communityCreateStatus");
  if(!name||!city||!description||!rules){status.textContent="Please complete all fields, including community rules.";return;}
+ if(/\b\d{1,6}\s+[\w.\s-]+\b(?:st(?:reet)?|ave(?:nue)?|rd|road|blvd|boulevard|dr(?:ive)?|lane|ln|court|ct|way)\b/i.test(city)){status.textContent="Use only a city or region, not a street address.";return;}
  if(communityState.communities.some(c=>c.name.toLowerCase()===name.toLowerCase()&&c.city.toLowerCase()===city.toLowerCase())){status.textContent="A community with this name already exists in this city on this device.";return;}
  const id="local-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);
  communityState.communities.push({id,name,city,description,rules,joined:true});
