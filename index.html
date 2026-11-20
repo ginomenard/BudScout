@@ -382,8 +382,10 @@ function renderVerifiedStoreMarkers(){
    const marker=L.marker([lat,lon],{icon:clusterIcon,title:count+" reviewed dispensaries; zoom in to explore",alt:count+" dispensaries grouped"}).addTo(storeMarkerLayer);
    marker.on("click",()=>{
     const bounds=L.latLngBounds(group.map(store=>[store.latitude,store.longitude]));
-    ohioMap.fitBounds(bounds.pad(0.3),{maxZoom:Math.min(ohioMap.getZoom()+3,15)});
-    if(ohioMap.getZoom()===zoom)ohioMap.setZoom(Math.min(zoom+2,15));
+    // A tapped cluster must keep the selected group's center in view, even when
+    // its bounds are broad or Leaflet constrains the requested zoom.
+    const targetZoom=Math.min(Math.max(zoom+2,ohioMap.getBoundsZoom(bounds.pad(0.3))),15);
+    ohioMap.setView(bounds.getCenter(),targetZoom,{animate:true});
    });
    return;
   }
@@ -517,7 +519,11 @@ document.getElementById("resetCompare").onclick=()=>{selected.clear();render()};
 
 document.getElementById("listBtn").onclick=()=>{view="list";render()};
 
-document.getElementById("mapBtn").onclick=()=>{view="map";render()};
+document.getElementById("mapBtn").onclick=()=>{
+ // Search's Map action must navigate to the real dispensary map page.
+ // The product list remains available through the Search bottom tab.
+ showBudPage("map");
+};
 
 document.getElementById("locationForm").addEventListener("submit",async event=>{
  event.preventDefault();
