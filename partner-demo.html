@@ -8,7 +8,7 @@
 <h1 id="welcome">Your dispensary on BudScout</h1>
 <p>See how a future retailer dashboard could turn authorized point-of-sale and inventory data into practical decisions.</p>
 <div class="notice" role="note"><strong>FICTIONAL DEMONSTRATION — NOT LIVE BUSINESS DATA.</strong> Every dollar amount, transaction, product, trend and insight below is synthetic. BudScout does not currently receive retailer POS sales, inventory, or verified customer analytics. These figures do not describe any real dispensary, including a store named in the preview URL.</div>
-<div class="controls"><label for="period">Sample reporting period</label><select id="period"><option value="30">Last 30 days (demo)</option><option value="7">Last 7 days (demo)</option></select><span class="pill">Synthetic example data</span></div>
+<div class="controls"><label for="period">Sample reporting period</label><select id="period"><option value="30">Last 30 days (demo)</option><option value="7">Last 7 days (demo)</option><option value="ytd">Year to date (demo)</option></select><span class="pill">Synthetic example data</span></div>
 <section aria-label="Illustrative business performance"><div class="kpis" id="kpis"></div></section>
 <div class="layout">
 <section class="card" aria-labelledby="trend-title"><h2 id="trend-title">Illustrative revenue trend</h2><div id="trend" class="chart" role="img" aria-label="Synthetic weekly sales revenue chart"></div><p class="source">Example revenue by week; bars are not connected to a point-of-sale system.</p></section>
@@ -23,6 +23,7 @@
 (function(){
 'use strict';
 const datasets={
+ytd:{revenue:386400,orders:10120,average:38.18,change:12.6,weeks:[82000,92500,101300,110600],labels:['Jan–Mar','Apr–Jun','Jul–Sep','Oct–Nov'],categories:[['Flower',162000],['Vapes',98000],['Edibles',71000],['Concentrates',42000],['Other',13400]],products:[['Example Flower 3.5g','Flower',1940,58200],['Example Vape Cartridge','Vapes',1456,50960],['Example Gummies 100mg','Edibles',1320,26400],['Example Pre-roll Pack','Flower',1200,18000],['Example Concentrate 1g','Concentrates',910,31850]],stock:[['Example Flower 3.5g',18,9],['Example Gummies 100mg',85,17]]},
 30:{revenue:48620,orders:1280,average:37.98,change:8.4,weeks:[9400,11120,12800,15300],labels:['Week 1','Week 2','Week 3','Week 4'],categories:[['Flower',20300],['Vapes',12400],['Edibles',8900],['Concentrates',5100],['Other',1920]],products:[['Example Flower 3.5g','Flower',245,7350],['Example Vape Cartridge','Vapes',182,6370],['Example Gummies 100mg','Edibles',171,3420],['Example Pre-roll Pack','Flower',150,2250],['Example Concentrate 1g','Concentrates',112,3920]],stock:[['Example Flower 3.5g',18,9],['Example Gummies 100mg',85,17]]},
 7:{revenue:15300,orders:391,average:39.13,change:5.2,weeks:[3000,3750,4050,4500],labels:['Days 1–2','Days 3–4','Days 5–6','Day 7'],categories:[['Flower',6400],['Vapes',4000],['Edibles',2700],['Concentrates',1600],['Other',600]],products:[['Example Flower 3.5g','Flower',80,2400],['Example Vape Cartridge','Vapes',61,2135],['Example Gummies 100mg','Edibles',53,1060],['Example Pre-roll Pack','Flower',49,735],['Example Concentrate 1g','Concentrates',35,1225]],stock:[['Example Flower 3.5g',18,9],['Example Gummies 100mg',85,17]]}
 };
@@ -32,7 +33,8 @@ const name=(params.get('store')||'').trim().replace(/\s+/g,' ').slice(0,80)||'Yo
 document.getElementById('welcome').textContent=name+' on BudScout';
 document.getElementById('store-name').textContent=name;
 function render(){
-const d=datasets[document.getElementById('period').value];
+const selectedPeriod=document.getElementById('period').value;
+const d=datasets[selectedPeriod]||datasets[30];
 const metrics=[['Demo revenue',money(d.revenue)],['Demo transactions',d.orders.toLocaleString()],['Average order value',new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(d.average)],['Illustrative period change','+'+d.change+'%']];
 const k=document.getElementById('kpis');k.replaceChildren();
 metrics.forEach(([label,value])=>{const box=document.createElement('div');box.className='kpi';const v=document.createElement('div');v.className='metric';v.textContent=value;const l=document.createElement('div');l.className='muted';l.textContent=label;box.append(v,l);k.append(box)});
