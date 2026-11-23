@@ -1,8 +1,8 @@
 const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
-  testDir: './tests', timeout: 30000, expect: { timeout: 10000 }, retries: process.env.CI ? 1 : 0,
+  testDir: './tests', timeout: 30000, expect: { timeout: 10000 }, retries: 0, workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
-  use: { baseURL: 'http://127.0.0.1:4173', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  use: { baseURL: 'http://127.0.0.1:4173', trace: 'retain-on-failure', screenshot: 'only-on-failure', storageState: { cookies: [], origins: [{ origin: 'http://127.0.0.1:4173', localStorage: [{ name: 'budscout-welcome-choice-v1', value: 'guest' }] }] } },
   projects: [
     { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
     { name: 'mobile-webkit', use: { ...devices['iPhone 13'] } }
