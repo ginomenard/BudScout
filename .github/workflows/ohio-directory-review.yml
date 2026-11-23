@@ -1,0 +1,47 @@
+name: Ohio directory review (manual, no publication)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review-directory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate staged directory and existing regression tests
+        run: |
+          python3 scripts/validate_ohio_data.py
+          python3 -m unittest discover -s tests -p "test_ohio_data.py"
+      - name: Generate human review summary
+        run: |
+          python3 - <<'PY'
+          import json
+          from collections import Counter
+          from pathlib import Path
+          p = Path("data/ohio-dispensaries.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          rows = data["dispensaries"]
+          summary = [
+              "# Ohio directory staging review",
+              "",
+              "This workflow validates the repository staging file only. It does not download the Ohio GIS feed, refresh public listings, commit, publish, or deploy anything.",
+              "",
+              f"Staged records: {len(rows)}",
+              f"Last reviewed (metadata only): {data.get('last_reviewed') or 'not set'}",
+              f"Status counts: {dict(Counter(r.get('status') for r in rows))}",
+              f"Distinct source URLs: {len({r.get('source_url') for r in rows})}",
+              "",
+              "Before any actual refresh: verify the official Ohio GIS endpoint and license IDs, review changes and source dates, and obtain explicit approval for publication.",
+          ]
+          Path("ohio-directory-review.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
+          print("\n".join(summary))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ohio-directory-review
+          path: ohio-directory-review.md
+          retention-days: 7
