@@ -16,6 +16,7 @@ jobs:
         run: |
           python3 scripts/validate_ohio_data.py
           python3 -m unittest discover -s tests -p "test_ohio_data.py"
+          python3 -m unittest discover -s tests -p "test_ohio_gis_review.py"
       - name: Generate human review summary
         run: |
           python3 - <<'PY'
@@ -40,8 +41,13 @@ jobs:
           Path("ohio-directory-review.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
           print("\n".join(summary))
           PY
+      - name: Read official Ohio GIS and create non-publishing diff
+        run: |
+          python3 scripts/review_ohio_gis.py --output ohio-gis-review.json
       - uses: actions/upload-artifact@v4
         with:
           name: ohio-directory-review
-          path: ohio-directory-review.md
+          path: |
+            ohio-directory-review.md
+            ohio-gis-review.json
           retention-days: 7
