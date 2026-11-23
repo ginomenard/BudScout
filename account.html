@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BudScout | Account</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1710;color:#eef7ee;font:16px/1.5 system-ui,Arial,sans-serif}main{max-width:520px;margin:48px auto;padding:0 20px}h1{color:#a6ed75}.card{background:#1b2d21;border:1px solid #39513e;border-radius:22px;padding:24px}label{display:block;margin-top:15px;font-weight:600}input{width:100%;padding:13px;margin-top:6px;border:1px solid #537159;border-radius:10px;background:#102017;color:#fff;font:inherit}button{border:0;border-radius:12px;background:#a6ed75;color:#102017;padding:13px 17px;font:inherit;font-weight:700;cursor:pointer;margin:12px 8px 0 0}button.secondary{background:#304c37;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}a{color:#a6ed75}p,.muted{color:#c3d4c4}.notice{border-left:3px solid #a6ed75;padding-left:12px}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #a6ed75;outline-offset:3px}[hidden]{display:none!important}
+</style></head><body><main><p><a href="./index.html">← Back to BudScout</a></p><h1>BudScout account</h1><p>Browse dispensaries without an account. Sign in to prepare for community and retailer features.</p><section class="card" aria-label="Account management"><p id="configNotice" class="notice" role="status">Checking account availability…</p>
+<div id="guest"><form id="authForm"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required maxlength="254"><label for="password">Password (at least 8 characters)</label><input id="password" type="password" autocomplete="current-password" required minlength="8"><button id="signIn" type="submit">Sign in</button><button id="signUp" type="button" class="secondary">Create account</button></form><p class="muted">Email confirmation may be required before signing in. Business access is never granted automatically.</p></div>
+<div id="signedIn" hidden><p id="signedInEmail"></p><p>Signed in as a personal user. Business dashboards require verified retailer approval.</p><button id="signOut" type="button" class="secondary">Sign out</button><hr><h2>Request business access</h2><form id="businessForm"><label for="businessName">Dispensary legal/business name</label><input id="businessName" required maxlength="120"><label for="businessLicense">Ohio license ID</label><input id="businessLicense" required maxlength="80"><button type="submit">Submit verification request</button></form><p class="muted">Requests are pending manual review. No business data or dashboard privileges are unlocked by submitting this form.</p></div>
+<p id="status" role="status" aria-live="polite"></p></section></main>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from './auth-config.js';
+const $=id=>document.getElementById(id);
+const configured=Boolean(SUPABASE_URL&&SUPABASE_ANON_KEY&&/^https:\/\//.test(SUPABASE_URL));
+const status=message=>{$('status').textContent=message;};
+let client;
+if(!configured){$('configNotice').textContent='Account registration is not active yet. You can still browse BudScout as a guest.';$('authForm').querySelectorAll('button').forEach(b=>b.disabled=true);}
+else{
+ client=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ $('configNotice').textContent='Accounts use secure email authentication. Guest browsing remains available.';
+ const render=async()=>{const {data:{user}}=await client.auth.getUser();$('guest').hidden=!!user;$('signedIn').hidden=!user;$('signedInEmail').textContent=user?'Signed in: '+user.email:'';};
+ $('authForm').addEventListener('submit',async e=>{e.preventDefault();const {error}=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});status(error?error.message:'Signed in.');if(!error)render();});
+ $('signUp').addEventListener('click',async()=>{if(!$('authForm').reportValidity())return;const {error}=await client.auth.signUp({email:$('email').value.trim(),password:$('password').value});status(error?error.message:'Registration submitted. Check your email if confirmation is enabled.');render();});
+ $('signOut').addEventListener('click',async()=>{const {error}=await client.auth.signOut();status(error?error.message:'Signed out.');render();});
+ $('businessForm').addEventListener('submit',async e=>{e.preventDefault();const {data:{user},error:authError}=await client.auth.getUser();if(authError||!user){status('Sign in first.');return;}const {error}=await client.from('business_verification_requests').insert({business_name:$('businessName').value.trim(),license_id:$('businessLicense').value.trim()});status(error?'Could not submit request. Please try again.':'Business verification request submitted for manual review.');if(!error)e.target.reset();});
+ client.auth.onAuthStateChange(()=>{render();});render();
+}
+</script></body></html>
