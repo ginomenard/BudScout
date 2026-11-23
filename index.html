@@ -14,6 +14,17 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
 <style>
+.bud-welcome-overlay{position:fixed;inset:0;z-index:5000;background:#09170feF;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.bud-welcome-overlay[hidden]{display:none!important}
+.bud-welcome-card{width:min(100%,440px);background:#1b2d21;border:1px solid #45634b;border-radius:26px;padding:32px 24px;text-align:center;box-shadow:0 22px 60px #0009}
+.bud-welcome-card h1{font-size:2rem;margin:8px 0;color:#a6ed75}
+.bud-welcome-card p{margin:12px 0 24px;color:#c8d7ca}
+.bud-welcome-actions{display:grid;gap:12px}
+.bud-welcome-actions a,.bud-welcome-actions button{display:block;width:100%;padding:14px 18px;margin:0;border:1px solid #a6ed75;border-radius:14px;background:#a6ed75;color:#102017;font:inherit;font-weight:700;text-align:center;text-decoration:none;cursor:pointer}
+.bud-welcome-actions .secondary{background:transparent;color:#a6ed75}
+.bud-welcome-actions .guest{background:transparent;border-color:#5e7862;color:#e3f0e4}
+.bud-welcome-actions a:focus-visible,.bud-welcome-actions button:focus-visible{outline:3px solid white;outline-offset:3px}
+
 
 *{box-sizing:border-box}
 
@@ -200,6 +211,19 @@ main{padding-bottom:calc(115px + env(safe-area-inset-bottom, 0px))}
 </head>
 
 <body>
+<section id="bud-welcome" class="bud-welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="bud-welcome-title" hidden>
+ <div class="bud-welcome-card">
+  <div aria-hidden="true" style="font-size:40px">🌱</div>
+  <h1 id="bud-welcome-title">Welcome to BudScout</h1>
+  <p>Discover dispensaries. Compare demo listings. Find your community.</p>
+  <div class="bud-welcome-actions">
+   <a href="./account.html?intent=signup">Create account</a>
+   <a class="secondary" href="./account.html?intent=signin">Sign in</a>
+   <button type="button" class="guest" id="bud-welcome-guest">Continue as guest</button>
+  </div>
+  <p style="font-size:13px;margin:20px 0 0">No account required to browse. Community posting and business tools will require accounts when connected.</p>
+ </div>
+</section>
 
 <main>
 
@@ -752,6 +776,20 @@ loadVerifiedDispensaries();
 
 </script>
 
+<script>
+(function(){
+'use strict';
+const key='budscout-welcome-choice-v1';
+const overlay=document.getElementById('bud-welcome');
+const guest=document.getElementById('bud-welcome-guest');
+let seen=false;
+try{seen=localStorage.getItem(key)==='guest'||localStorage.getItem(key)==='account';}catch(e){seen=false;}
+if(!seen){overlay.hidden=false;document.body.style.overflow='hidden';const first=overlay.querySelector('a');first.focus();}
+function dismiss(){overlay.hidden=true;document.body.style.overflow='';}
+guest.addEventListener('click',()=>{try{localStorage.setItem(key,'guest');}catch(e){}dismiss();});
+overlay.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{try{localStorage.setItem(key,'account');}catch(e){}}));
+})();
+</script>
 </body>
 
 </html>
