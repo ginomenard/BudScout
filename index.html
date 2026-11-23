@@ -783,11 +783,11 @@ const key='budscout-welcome-choice-v1';
 const overlay=document.getElementById('bud-welcome');
 const guest=document.getElementById('bud-welcome-guest');
 let seen=false;
-try{seen=localStorage.getItem(key)==='guest'||localStorage.getItem(key)==='account';}catch(e){seen=false;}
+try{seen=localStorage.getItem(key)==='guest';}catch(e){seen=false;}
 if(!seen){overlay.hidden=false;document.body.style.overflow='hidden';const first=overlay.querySelector('a');first.focus();}
 function dismiss(){overlay.hidden=true;document.body.style.overflow='';}
 guest.addEventListener('click',()=>{try{localStorage.setItem(key,'guest');}catch(e){}dismiss();});
-overlay.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{try{localStorage.setItem(key,'account');}catch(e){}}));
+// Sign-in links do not mark a visitor as onboarded until authentication succeeds.
 })();
 </script>
 </body>
