@@ -35,7 +35,8 @@ test('analytics fit narrow screens and stay scoped to their dashboard section', 
   await expect(page.locator('#action-data tr')).toHaveCount(4);
   for(const tab of ['Overview','Market','Community','Profile']){
     await page.getByRole('button',{name:tab,exact:true}).click();
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+    const layout=await page.evaluate(()=>({width:window.innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('main *')].filter(el=>{const b=el.getBoundingClientRect();return b.width&&b.right>window.innerWidth+1}).map(el=>({tag:el.tagName,id:el.id,cls:el.className,right:el.getBoundingClientRect().right,text:el.textContent.slice(0,90)}))}));
+    expect(layout.scroll,JSON.stringify({tab,...layout})).toBeLessThanOrEqual(layout.width+1);
     await expect(page.getByRole('note')).toBeVisible();
     await expect(page.locator('#dashboard-details')).toBeVisible({visible:tab==='Overview'});
     await expect(page.locator('#market-details')).toBeVisible({visible:tab==='Market'});
