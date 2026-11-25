@@ -25,3 +25,27 @@ test('partner contact and back navigation fit narrow mobile screens', async ({ p
   await page.getByRole('link', { name: /Back to BudScout/ }).click();
   await expect(page.locator('#budHome')).toBeVisible();
 });
+
+test('retailer dashboard keeps disclosures visible across tabs and updates sample metrics', async ({ page }) => {
+  await page.goto('/partner.html');
+  await page.getByRole('link', { name: /fictional business dashboard concept/ }).click();
+  const disclosure = page.getByRole('note');
+  await expect(disclosure).toContainText('FICTIONAL DEMONSTRATION');
+  await expect(page.locator('#kpis')).toContainText('3,842');
+  await page.getByLabel('Sample reporting period').selectOption('7');
+  await expect(page.locator('#kpis')).toContainText('842');
+  await expect(page.locator('#kpis')).not.toContainText('3,842');
+
+  for (const [tab, heading] of [
+    ['Market', 'Regional market intelligence'],
+    ['Community', 'Community feedback preview'],
+    ['Profile', 'Your storefront preview'],
+  ]) {
+    const button = page.getByRole('button', { name: tab, exact: true });
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+    await expect(disclosure).toBeVisible();
+  }
+  await expect(page.locator('#profile')).toContainText('This preview cannot edit or verify a business.');
+});
