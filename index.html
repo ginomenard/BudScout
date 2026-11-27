@@ -496,7 +496,8 @@ function renderVerifiedStoreMarkers(){
     // A tapped cluster must keep the selected group's center in view, even when
     // its bounds are broad or Leaflet constrains the requested zoom.
     const targetZoom=Math.min(Math.max(zoom+2,ohioMap.getBoundsZoom(bounds.pad(0.3))),15);
-    ohioMap.setView(bounds.getCenter(),targetZoom,{animate:true});
+    // Center on the same coordinates as the marker the user tapped.
+    ohioMap.setView(marker.getLatLng(),targetZoom,{animate:true});
    });
    return;
   }
